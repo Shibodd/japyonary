@@ -4,9 +4,11 @@ class Entry(models.Model):
   ent_seq = models.PositiveIntegerField(primary_key=True)
 
 class Entity(models.Model):
+  uid = models.IntegerField(primary_key=True)
   desc = models.CharField(max_length=64, unique=True)
   
 class KEle(models.Model):
+  uid = models.IntegerField(primary_key=True)
   entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
 
   keb = models.CharField(max_length=64, null=False, blank=False)
@@ -14,15 +16,18 @@ class KEle(models.Model):
   ke_pri = models.ManyToManyField(Entity, related_name='ke_pri')
 
 class REle(models.Model):
+  uid = models.IntegerField(primary_key=True)
   entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
 
   reb = models.CharField(max_length=64)
+  hepburn = models.CharField(max_length=192)
   re_nokanji = models.BooleanField()
   re_restr = models.ManyToManyField(KEle)
   re_inf = models.ManyToManyField(Entity, related_name='re_inf')
   re_pri = models.ManyToManyField(Entity, related_name='re_pri')
 
 class Sense(models.Model):
+  uid = models.IntegerField(primary_key=True)
   entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
 
   stagk = models.ManyToManyField(KEle)

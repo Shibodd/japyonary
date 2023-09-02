@@ -5,5 +5,6 @@ from . import views
 app_name = 'dictionary'
 
 urlpatterns = [
-  path("", views.IndexView.as_view(), name="index")
+  path("", views.IndexView.as_view(), name="index"),
+  path("<str:query>", views.IndexView.as_view(), name="index")
 ]

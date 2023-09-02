@@ -8,7 +8,7 @@ from . import jmdict_xml
 import dictionary.models as models
 import pickle
 import itertools
-
+import romkan
 
 def load_jmd_xml(path: Path) -> jmdict_xml.Jmdict:
   if isinstance(path, str):
@@ -82,7 +82,7 @@ def update_db(jmd: jmdict_xml.Jmdict):
     # The order is deterministic, so we can iterate twice over xml_objs to get a lookup table.
     return dict(zip(
       (id(xml_obj) for xml_obj in xml_objs),
-      (db_obj.pk for db_obj in db_objs)
+      (db_obj.uid for db_obj in db_objs)
     ))
   
   print("Resolving links...")
@@ -103,13 +103,18 @@ def update_db(jmd: jmdict_xml.Jmdict):
     (k_ele for entry in jmd.entry for k_ele in entry.k_ele),
     models.KEle.objects.bulk_create(
       models.KEle(
+        uid = i,
         entry_id = entry.ent_seq,
         keb = k_ele.keb
       )
-      for entry in jmd.entry 
-      for k_ele in entry.k_ele
+      for (i, (entry, k_ele))
+      in enumerate(
+          (entry, k_ele)
+          for entry in jmd.entry
+          for k_ele in entry.k_ele)
     )
   )
+  print(k_ele_lookup)
 
   # REle
   print("Creating REles...")
@@ -117,12 +122,17 @@ def update_db(jmd: jmdict_xml.Jmdict):
     (r_ele for entry in jmd.entry for r_ele in entry.r_ele),
     models.REle.objects.bulk_create(
       models.REle(
+        uid = i,
         entry_id = entry.ent_seq,
         reb = r_ele.reb,
+        hepburn = romkan.to_hepburn(r_ele.reb),
         re_nokanji = r_ele.re_nokanji is not None
       )
-      for entry in jmd.entry 
-      for r_ele in entry.r_ele
+      for (i, (entry, r_ele))
+      in enumerate(
+          (entry, r_ele)
+          for entry in jmd.entry
+          for r_ele in entry.r_ele)
     )
   )
 
@@ -132,11 +142,15 @@ def update_db(jmd: jmdict_xml.Jmdict):
     (sense for entry in jmd.entry for sense in entry.sense),
     models.Sense.objects.bulk_create(
       models.Sense(
+        uid = i,
         entry_id = entry.ent_seq,
         s_inf = sense.s_inf
       )
-      for entry in jmd.entry 
-      for sense in entry.sense
+      for (i, (entry, sense))
+      in enumerate(
+          (entry, sense)
+          for entry in jmd.entry
+          for sense in entry.sense)
     )
   )
 
@@ -174,8 +188,14 @@ def update_db(jmd: jmdict_xml.Jmdict):
   print("Creating entities...")
   # Create an entity lookup based on the entity description
   entity_lookup = dict(
-    (entity.desc, entity.pk)
-    for entity in models.Entity.objects.bulk_create(models.Entity(desc = entity) for entity in load_entities(jmd))
+    (entity.desc, entity.uid)
+    for entity in models.Entity.objects.bulk_create(
+      models.Entity(
+        uid = i,
+        desc = entity
+      )
+      for i, entity in enumerate(load_entities(jmd))
+    )
   )
 
   # Create all many to many relationships
