@@ -77,16 +77,22 @@ def resolve_inter_entry_links(jmd: jmdict_xml.Jmdict):
       sense.stagk = resolve_k(entry, sense.stagk)
       sense.stagr = resolve_r(entry, sense.stagr)
 
+def assign_uids(objects):
+  for i, obj in enumerate(objects):
+    obj.__uid = i
+
 def update_db(jmd: jmdict_xml.Jmdict):
-  def create_lookup_on_object_id(xml_objs, db_objs):
-    # The order is deterministic, so we can iterate twice over xml_objs to get a lookup table.
-    return dict(zip(
-      (id(xml_obj) for xml_obj in xml_objs),
-      (db_obj.uid for db_obj in db_objs)
-    ))
-  
   print("Resolving links...")
+  
   resolve_inter_entry_links(jmd)
+
+  # Generate UIDS for models that have foreign key relationships.
+  #  On windows SQLite3, objects returned by bulk_create have a valid object.pk.
+  #  On linux SQLite3, object.pk is None.
+  #  We work around this by generating our own IDs.
+  assign_uids(k_ele for entry in jmd.entry for k_ele in entry.k_ele)
+  assign_uids(r_ele for entry in jmd.entry for r_ele in entry.r_ele)
+  assign_uids(sense for entry in jmd.entry for sense in entry.sense)
   
   # Nuke the db
   print("Deleting objects...")
@@ -99,66 +105,48 @@ def update_db(jmd: jmdict_xml.Jmdict):
 
   # KEle
   print("Creating KEles...")
-  k_ele_lookup = create_lookup_on_object_id(
-    (k_ele for entry in jmd.entry for k_ele in entry.k_ele),
-    models.KEle.objects.bulk_create(
-      models.KEle(
-        uid = i,
-        entry_id = entry.ent_seq,
-        keb = k_ele.keb
-      )
-      for (i, (entry, k_ele))
-      in enumerate(
-          (entry, k_ele)
-          for entry in jmd.entry
-          for k_ele in entry.k_ele)
+
+  models.KEle.objects.bulk_create(
+    models.KEle(
+      uid = k_ele.__uid,
+      entry_id = entry.ent_seq,
+      keb = k_ele.keb
     )
+    for entry in jmd.entry
+    for k_ele in entry.k_ele
   )
-  print(k_ele_lookup)
 
   # REle
   print("Creating REles...")
-  r_ele_lookup = create_lookup_on_object_id(
-    (r_ele for entry in jmd.entry for r_ele in entry.r_ele),
-    models.REle.objects.bulk_create(
-      models.REle(
-        uid = i,
-        entry_id = entry.ent_seq,
-        reb = r_ele.reb,
-        hepburn = romkan.to_hepburn(r_ele.reb),
-        re_nokanji = r_ele.re_nokanji is not None
-      )
-      for (i, (entry, r_ele))
-      in enumerate(
-          (entry, r_ele)
-          for entry in jmd.entry
-          for r_ele in entry.r_ele)
+  models.REle.objects.bulk_create(
+    models.REle(
+      uid = r_ele.__uid,
+      entry_id = entry.ent_seq,
+      reb = r_ele.reb,
+      hepburn = romkan.to_hepburn(r_ele.reb),
+      re_nokanji = r_ele.re_nokanji is not None
     )
+    for entry in jmd.entry
+    for r_ele in entry.r_ele
   )
 
   # Sense
   print("Creating Senses...")
-  sense_lookup = create_lookup_on_object_id(
-    (sense for entry in jmd.entry for sense in entry.sense),
-    models.Sense.objects.bulk_create(
-      models.Sense(
-        uid = i,
-        entry_id = entry.ent_seq,
-        s_inf = sense.s_inf
-      )
-      for (i, (entry, sense))
-      in enumerate(
-          (entry, sense)
-          for entry in jmd.entry
-          for sense in entry.sense)
+  models.Sense.objects.bulk_create(
+    models.Sense(
+      uid = sense.__uid,
+      entry_id = entry.ent_seq,
+      s_inf = sense.s_inf
     )
+    for entry in jmd.entry
+    for sense in entry.sense
   )
 
   # LSource
   print("Creating LSources...")
   models.LSource.objects.bulk_create(
     models.LSource(
-      sense_id = sense_lookup[id(sense)],
+      sense_id = sense.__uid,
       lang = lsource.lang,
       ls_wasei = lsource.ls_wasei is not None,
       ls_type = lsource.ls_type,
@@ -173,7 +161,7 @@ def update_db(jmd: jmdict_xml.Jmdict):
   print("Creating Glosses...")
   models.Gloss.objects.bulk_create(
     models.Gloss(
-      sense_id = sense_lookup[id(sense)],
+      sense_id = sense.__uid,
       lang = gloss.lang,
       g_type = gloss.g_type,
       g_gend = gloss.g_gend,
@@ -199,62 +187,63 @@ def update_db(jmd: jmdict_xml.Jmdict):
   )
 
   # Create all many to many relationships
+  print("Creating relationships...")
   models.KEle.ke_inf.through.objects.bulk_create(
-    models.KEle.ke_inf.through(kele_id=k_ele_lookup[id(k_ele)], entity_id=entity_lookup[ke_inf])
+    models.KEle.ke_inf.through(kele_id=k_ele.__uid, entity_id=entity_lookup[ke_inf])
     for entry in jmd.entry
     for k_ele in entry.k_ele
     for ke_inf in k_ele.ke_inf
   )
   models.KEle.ke_pri.through.objects.bulk_create(
-    models.KEle.ke_pri.through(kele_id=k_ele_lookup[id(k_ele)], entity_id=entity_lookup[ke_pri])
+    models.KEle.ke_pri.through(kele_id=k_ele.__uid, entity_id=entity_lookup[ke_pri])
     for entry in jmd.entry
     for k_ele in entry.k_ele
     for ke_pri in k_ele.ke_pri
   )
   models.REle.re_pri.through.objects.bulk_create(
-    models.REle.re_pri.through(rele_id=r_ele_lookup[id(r_ele)], entity_id=entity_lookup[re_pri])
+    models.REle.re_pri.through(rele_id=r_ele.__uid, entity_id=entity_lookup[re_pri])
     for entry in jmd.entry
     for r_ele in entry.r_ele
     for re_pri in r_ele.re_pri
   )
   models.REle.re_inf.through.objects.bulk_create(
-    models.REle.re_inf.through(rele_id=r_ele_lookup[id(r_ele)], entity_id=entity_lookup[re_inf])
+    models.REle.re_inf.through(rele_id=r_ele.__uid, entity_id=entity_lookup[re_inf])
     for entry in jmd.entry
     for r_ele in entry.r_ele
     for re_inf in r_ele.re_inf
   )
   models.Sense.stagk.through.objects.bulk_create(
-    models.Sense.stagk.through(sense_id=sense_lookup[id(sense)], kele_id=k_ele_lookup[id(stagk)])
+    models.Sense.stagk.through(sense_id=sense.__uid, kele_id=stagk.__uid)
     for entry in jmd.entry
     for sense in entry.sense
     for stagk in sense.stagk
   )
   models.Sense.stagr.through.objects.bulk_create(
-    models.Sense.stagr.through(sense_id=sense_lookup[id(sense)], rele_id=r_ele_lookup[id(stagr)])
+    models.Sense.stagr.through(sense_id=sense.__uid, rele_id=stagr.__uid)
     for entry in jmd.entry
     for sense in entry.sense
     for stagr in sense.stagr
   )
   models.Sense.pos.through.objects.bulk_create(
-    models.Sense.pos.through(sense_id=sense_lookup[id(sense)], entity_id=entity_lookup[pos])
+    models.Sense.pos.through(sense_id=sense.__uid, entity_id=entity_lookup[pos])
     for entry in jmd.entry
     for sense in entry.sense
     for pos in sense.pos
   )
   models.Sense.field.through.objects.bulk_create(
-    models.Sense.field.through(sense_id=sense_lookup[id(sense)], entity_id=entity_lookup[field])
+    models.Sense.field.through(sense_id=sense.__uid, entity_id=entity_lookup[field])
     for entry in jmd.entry
     for sense in entry.sense
     for field in sense.field_value
   )
   models.Sense.misc.through.objects.bulk_create(
-    models.Sense.misc.through(sense_id=sense_lookup[id(sense)], entity_id=entity_lookup[misc])
+    models.Sense.misc.through(sense_id=sense.__uid, entity_id=entity_lookup[misc])
     for entry in jmd.entry
     for sense in entry.sense
     for misc in sense.misc
   )
   models.Sense.dial.through.objects.bulk_create(
-    models.Sense.dial.through(sense_id=sense_lookup[id(sense)], entity_id=entity_lookup[dial])
+    models.Sense.dial.through(sense_id=sense.__uid, entity_id=entity_lookup[dial])
     for entry in jmd.entry
     for sense in entry.sense
     for dial in sense.dial
