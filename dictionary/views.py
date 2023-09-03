@@ -16,24 +16,48 @@ class IndexView(ListView):
 
   def __rewrite_bad_searchbar_url(self, request: HttpRequest):
     # TODO: just request it correctly client-side in the first place
-    if 'query' in request.GET:
+    if 'query' in request.GET and 'lang' in request.GET:
       return redirect(reverse('dictionary:index', kwargs = {
-        'query': request.GET['query']
+        'query': request.GET['query'],
+        'lang': request.GET['lang']
       }))
+    
     return None
+  
+  def parse_parameters(self):
+    def normalize(s: str):
+      if s is None:
+        return None
+      s = s.strip()
+      if len(s) == 0:
+        return None
+      return s
+
+    self.query = normalize(self.request.resolver_match.kwargs.get('query'))
+    self.lang = normalize(self.request.resolver_match.kwargs.get('lang'))
+    self.is_searching = self.query is not None and self.lang is not None
 
   def get(self, request: HttpRequest, *args, **kwargs):
     rewrite_resp = self.__rewrite_bad_searchbar_url(request)
-    return rewrite_resp or super().get(request, *args, **kwargs)
+    if rewrite_resp:
+      return rewrite_resp
+    
+    self.parse_parameters()
+    return super().get(request, *args, **kwargs)
 
   def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-    context = super().get_context_data(**kwargs)
-    query = self.request.resolver_match.kwargs.get('query', None)
+    ctx = super().get_context_data(**kwargs)
 
-    sbf =  SearchBarForm() if query is None else SearchBarForm({ 'query': query })
-    context['search_bar_form'] = sbf
-    return context
+    ctx['is_searching'] = self.is_searching
+    ctx['search_bar_form'] = SearchBarForm() if self.query is None else SearchBarForm({
+      'query': self.query,
+      'lang': self.lang
+    })
+
+    return ctx
   
   def get_queryset(self) -> QuerySet[Any]:
-    query = query_utils.build_query(self.request.resolver_match.kwargs.get('query'))
-    return models.Entry.objects.filter(query)
+    if self.is_searching:
+      return query_utils.get_entry_queryset(self.lang, self.query)
+    else:
+      return tuple()

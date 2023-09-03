@@ -110,7 +110,8 @@ def update_db(jmd: jmdict_xml.Jmdict):
     models.KEle(
       uid = k_ele.__uid,
       entry_id = entry.ent_seq,
-      keb = k_ele.keb
+      keb = k_ele.keb,
+      hepburn = romkan.to_hepburn(k_ele.keb)
     )
     for entry in jmd.entry
     for k_ele in entry.k_ele
@@ -165,7 +166,7 @@ def update_db(jmd: jmdict_xml.Jmdict):
       lang = gloss.lang,
       g_type = gloss.g_type,
       g_gend = gloss.g_gend,
-      content = gloss.content
+      content = gloss.content[0]
     )
     for entry in jmd.entry
     for sense in entry.sense

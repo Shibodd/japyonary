@@ -1,0 +1,38 @@
+{% load dictionary_filters %}
+
+{% with main_keb=entry|entry_get_main_keb main_reb=entry|entry_get_main_reb %}
+  <span class="fs-3 text-normal me-3">
+    {% if main_keb %}
+    {{ main_keb }}
+    {% else %}
+    {{ main_reb }}
+    {% endif %}
+  </span>
+
+  {% if main_keb %}
+  <span class="text-normal">
+    {{ main_reb }}
+  </span>
+  {% endif %}
+{% endwith %}
+<ul class="list-group">
+  {% for sense in entry.sense_set.all %}
+    <li class="list-group-item">
+      <p class="text-wrap mb-0">
+        {% for pos in sense.pos.all %}
+          <span class="badge text-muted">
+            {{ pos.desc }}
+          </span>
+        {% endfor %}
+      </p>
+      {{ sense|sense_get_glosses_str }}
+
+      {% with only_applies_to=sense|sense_get_only_applies_to %}
+        {% if only_applies_to %}
+          <br/>
+          <small class="text-muted"> Only applies to {{ only_applies_to }} </small>
+        {% endif %}
+      {% endwith %}
+    </li>
+  {% endfor %}
+</ul>

@@ -1,17 +1,26 @@
 import romkan
-import itertools
 import re
 from . import models
+from django.db.models import Count, Sum, F, Expression
 
-__HIRAGANA = set(itertools.chain.from_iterable(romkan.KANROM_H.keys()))
-__KATAKANA = set(itertools.chain.from_iterable(romkan.KANROM.keys()))
-__KANA = __HIRAGANA.union(__KATAKANA)
+is_valid_romaji = re.compile(f'^({romkan.HEPPAT.pattern})*$')
 
-is_english = re.compile('^[A-Za-z\d\s]*$')
-
-def build_query(user_query: str):
+def get_entry_queryset(lang: str, user_query: str):
   user_query = user_query.strip().lower()
-  hep = romkan.to_hepburn(user_query)
-  lookup_meaning = is_english.match(user_query) is not None
 
-  
+  if lang == 'en':
+    fil = { 'sense__gloss__content__icontains': user_query }
+  else:
+    hep = romkan.to_hepburn(user_query)
+    # If it is all romaji it doesn't make any sense to look in KEle (REle is guaranteed to contain it too).
+    # If it is not all romaji, it doesn't make any sense to look in REle (REle will never contain it).
+
+    if is_valid_romaji.match(hep):
+      fil = { 'rele__hepburn__contains': hep }
+    else:
+      fil = { 'kele__hepburn__contains': hep }
+
+  return models.Entry.objects \
+    .filter(**fil) \
+    .annotate(pri_count=Count('kele__ke_pri') + Count('rele__re_pri')) \
+    .order_by('-pri_count')
