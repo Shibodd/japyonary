@@ -12,6 +12,7 @@ class KEle(models.Model):
   entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
 
   keb = models.CharField(max_length=64, null=False, blank=False)
+  hepburn = models.CharField(max_length=64*3, null=False, blank=False)
   ke_inf = models.ManyToManyField(Entity, related_name='ke_inf')
   ke_pri = models.ManyToManyField(Entity, related_name='ke_pri')
 
@@ -19,8 +20,8 @@ class REle(models.Model):
   uid = models.IntegerField(primary_key=True)
   entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
 
-  reb = models.CharField(max_length=64)
-  hepburn = models.CharField(max_length=192)
+  reb = models.CharField(max_length=64, null=False, blank=False)
+  hepburn = models.CharField(max_length=64*3, null=False, blank=False)
   re_nokanji = models.BooleanField()
   re_restr = models.ManyToManyField(KEle)
   re_inf = models.ManyToManyField(Entity, related_name='re_inf')
