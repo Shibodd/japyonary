@@ -5,7 +5,7 @@ from django.http.request import HttpRequest
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
-from .forms.search_bar import SearchBarForm
+from japyonary.forms.search_bar import SearchBarForm
 from . import models, query_utils
 
 class IndexView(ListView):
@@ -49,10 +49,21 @@ class IndexView(ListView):
     ctx = super().get_context_data(**kwargs)
 
     ctx['is_searching'] = self.is_searching
-    ctx['search_bar_form'] = SearchBarForm() if self.query is None else SearchBarForm({
-      'query': self.query,
-      'lang': self.lang
-    })
+
+    if self.query:
+      search_bar_data = {
+        'query': self.query,
+        'lang': self.lang
+      }
+    else:
+      search_bar_data = {}
+
+    ctx['search_bar_form'] = SearchBarForm(
+      placeholder='Enter kanji, kana, romaji or english',
+      mode_choices=[('en', 'English'), ('ja', 'Japanese')],
+      mode_field_name='lang',
+      data=search_bar_data
+    )
 
     return ctx
   
