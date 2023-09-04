@@ -3,7 +3,7 @@ from django.db.models.query import QuerySet
 from django.views.generic import ListView
 from django.http.request import HttpRequest
 from japyonary.forms.search_bar import SearchBarForm
-from . import models
+from decks import models
 
 from japyonary import utils
 
@@ -38,11 +38,11 @@ class SearchView(ListView):
   
   def get_queryset(self) -> QuerySet[Any]:
     if not self.is_searching:
-      return tuple()
+      return models.Deck.objects.top()
     
     MODE_FILTER_LOOKUP = {
       'author': 'owner__username__icontains',
       'title': 'name__icontains',
       'description': 'description__icontains'
     }
-    return models.Deck.objects.filter(**{ MODE_FILTER_LOOKUP[self.mode]: self.query })
+    return models.Deck.objects.filter(**{ MODE_FILTER_LOOKUP[self.mode]: self.query }).top()

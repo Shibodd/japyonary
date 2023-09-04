@@ -11,7 +11,12 @@
               <h5 class="card-title">{{ deck.name }} </h5>
               <p class="card-text text-truncate">{{ deck.description }}</p>
               <div class="d-flex">
-                <a href="{% url 'users:user_profile' deck.owner.username %}"> by {{ deck.owner.username }} </a>
+                <div class="flex-grow-1">
+                  <a href="{% url 'users:user_profile' deck.owner.username %}"> by {{ deck.owner.username }} </a>
+                </div>
+                <div>
+                  {% include 'decks/heart_widget.html' %}
+                </div>
               </div>
             </div>
           </div>

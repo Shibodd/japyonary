@@ -1,6 +1,13 @@
 {% extends "japyonary/base.html" %}
 {% load crispy_forms_tags %}
+{% load static %}
+
+{% block head %}
+<script type="text/javascript" src="{% static 'decks/heart.js' %}"></script>
+{% endblock %}
+
 {% block body %}
+  {% csrf_token %}
 
   {% crispy search_bar_form %}
 
@@ -9,4 +16,5 @@
     {% include "decks/deck_list.html" %}
     {% include "japyonary/paginator_widget.html" %}
   {% endif %} {# entries.count #}
+  
 {% endblock %}
