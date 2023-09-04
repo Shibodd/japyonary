@@ -57,7 +57,7 @@ ROOT_URLCONF = 'japyonary.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [ BASE_DIR / "japyonary" / "templates" ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

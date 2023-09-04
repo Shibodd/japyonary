@@ -1,53 +1,23 @@
-<!DOCTYPE html>
-
+{% extends "japyonary/base.html" %}
 {% load crispy_forms_tags %}
+{% block body %}
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% crispy search_bar_form %}
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-  </head>
-  <body>
-    {% crispy search_bar_form %}
+  {% if is_searching %}
+    <p> {{ page_obj.paginator.count }} search results. </p>
+    {% if entries.count > 0 %}
+      <ul class="list-group">
+        {% for entry in entries %}
+          <li class="list-group-item">
+            {% include "dictionary/entry_card.html" %}
+          </li>
+        {% endfor %}
+      </ul>
 
-    {% if is_searching %}
-      <p> {{ page_obj.paginator.count }} search results. </p>
-      {% if entries.count > 0 %}
-        <ul class="list-group">
-          {% for entry in entries %}
-            <li class="list-group-item">
-              {% include "dictionary/entry_card.html" %}
-            </li>
-          {% endfor %}
-        </ul>
+      {% include "japyonary/paginator_widget.html" %}
+    {% endif %} {# entries.count #}
+  {% else %}
+  {% endif %} {# is_searching #}
 
-        {% if page_obj.paginator.num_pages > 1 %}
-          <div class="pagination">
-            <span class="step-links">
-              {% if page_obj.has_previous %}
-                <a href="?page=1">&laquo; first</a>
-                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
-              {% endif %}
-
-              <span class="current">
-                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-              </span>
-
-              {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}">next</a>
-                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
-              {% endif %}
-            </span>
-          </div>
-        {% endif %} {# num_pages #}
-      {% endif %} {# entries.count #}
-    {% else %}
-    {% endif %} {# is_searching #}
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-  </body>
-</html>
+{% endblock %}
