@@ -1,0 +1,12 @@
+{% extends "japyonary/base.html" %}
+{% load crispy_forms_tags %}
+{% block body %}
+
+  {% crispy search_bar_form %}
+
+  <p> {{ page_obj.paginator.count }} search results. </p>
+  {% if page_obj.paginator.count > 0 %}
+    {% include "decks/deck_list.html" %}
+    {% include "japyonary/paginator_widget.html" %}
+  {% endif %} {# entries.count #}
+{% endblock %}

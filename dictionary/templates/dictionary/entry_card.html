@@ -6,11 +6,11 @@
       <span class="fs-3 text-normal me-3">
         {% if main_keb %} {{ main_keb }} {% else %} {{ main_reb }} {% endif %}
       </span>
-      
       {% if main_keb %}
         <span class="text-normal"> {{ main_reb }} </span>
       {% endif %}
     </div>
+    {% block entry_buttons_area_content %} {% endblock %}
   </div>
 {% endwith %}
 

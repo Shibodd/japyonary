@@ -11,7 +11,7 @@ class SearchBarForm(forms.Form):
 
     if mode_choices and mode_field_name:
       self.mode_field_name = mode_field_name
-      self.fields[self.mode_field_name] = forms.ChoiceField(choices=mode_choices, required=True)
+      self.fields[self.mode_field_name] = forms.ChoiceField(choices=mode_choices, required=False)
     else:
       self.mode_field_name = None
 

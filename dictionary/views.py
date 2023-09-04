@@ -7,6 +7,7 @@ from django.urls import reverse
 
 from japyonary.forms.search_bar import SearchBarForm
 from . import models, query_utils
+from japyonary import utils
 
 class IndexView(ListView):
   template_name = 'dictionary/index.html'
@@ -16,25 +17,23 @@ class IndexView(ListView):
 
   def __rewrite_bad_searchbar_url(self, request: HttpRequest):
     # TODO: just request it correctly client-side in the first place
-    if 'query' in request.GET and 'lang' in request.GET:
-      return redirect(reverse('dictionary:index', kwargs = {
-        'query': request.GET['query'],
-        'lang': request.GET['lang']
-      }))
+    query = request.GET.get('query')
+    lang = request.GET.get('lang')
+
+    if not query and not lang:
+      return None
     
-    return None
+    if query and lang:
+      return redirect(reverse('dictionary:index', kwargs = {
+        'query': query,
+        'lang': lang
+      }))
+
+    return redirect(reverse('dictionary:index'))
   
   def parse_parameters(self):
-    def normalize(s: str):
-      if s is None:
-        return None
-      s = s.strip()
-      if len(s) == 0:
-        return None
-      return s
-
-    self.query = normalize(self.request.resolver_match.kwargs.get('query'))
-    self.lang = normalize(self.request.resolver_match.kwargs.get('lang'))
+    self.query = utils.normalize_query(self.request.resolver_match.kwargs.get('query'))
+    self.lang = utils.normalize_query(self.request.resolver_match.kwargs.get('lang'))
     self.is_searching = self.query is not None and self.lang is not None
 
   def get(self, request: HttpRequest, *args, **kwargs):
@@ -50,19 +49,11 @@ class IndexView(ListView):
 
     ctx['is_searching'] = self.is_searching
 
-    if self.query:
-      search_bar_data = {
-        'query': self.query,
-        'lang': self.lang
-      }
-    else:
-      search_bar_data = {}
-
     ctx['search_bar_form'] = SearchBarForm(
       placeholder='Enter kanji, kana, romaji or english',
       mode_choices=[('en', 'English'), ('ja', 'Japanese')],
       mode_field_name='lang',
-      data=search_bar_data
+      data = utils.make_optional_dict(query=self.query, lang=self.lang)
     )
 
     return ctx
