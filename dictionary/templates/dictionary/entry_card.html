@@ -16,7 +16,7 @@
 
 <ul class="list-group">
   {% for sense in entry.sense_set.all %}
-    <li class="list-group-item">
+    <li class="list-group-item" style="background:transparent">
       <p class="text-wrap mb-0">
         {% for pos in sense.pos.all %}
           <span class="badge text-muted">

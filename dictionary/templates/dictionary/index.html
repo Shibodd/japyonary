@@ -1,13 +1,24 @@
 {% extends "japyonary/base.html" %}
 {% load crispy_forms_tags %}
 {% block body %}
+  <main class="container">
+    {% crispy search_bar_form %}
+  
+    {% if is_searching %}
+      <p> {{ page_obj.paginator.count }} search results. </p>
+      {% if entries.count > 0 %}
+      <ul class="list-group">
+        {% for entry in entries %}
+          <li class="list-group-item">
+            {% include "dictionary/entry_card.html" %}
+          </li>
+        {% endfor %}
+      </ul>
+      {% endif %} {# entries.count #}
+  
+      {% include "japyonary/paginator_widget.html" %}
+    {% endif %} {# is_searching #}
+  </main>
 
-  {% crispy search_bar_form %}
-
-  {% if is_searching %}
-    <p> {{ page_obj.paginator.count }} search results. </p>
-    {% include "dictionary/entry_list.html" %}
-  {% else %}
-  {% endif %} {# is_searching #}
 
 {% endblock %}

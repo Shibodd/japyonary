@@ -1,38 +1,17 @@
+// Hearts
 async function heart(deck_id, icon, count) {
   const HEARTED_CLASS = 'bi-heart-fill';
   const UNHEARTED_CLASS = 'bi-heart';
 
   const was_hearted = icon.classList.contains(HEARTED_CLASS);
 
-  const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-  const response = await fetch(
-    "ajax/heart_deck",
-    {
-      method: 'POST',
-      mode: 'same-origin', // Do not send CSRF token to another domain.
-      headers: {
-        'X-CSRFToken': csrftoken,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        "deck_id": deck_id,
-        "should_heart": !was_hearted
-      })
-    }
-  );
-  if (!response.ok) {
-    console.log(response);
-    return;
-  }
+  const response = await ajax_call("/decks/ajax/heart_deck", {
+    "deck_id": deck_id,
+    "should_heart": !was_hearted
+  });
 
-  const jsonResponse = await response.json();
-  if (!jsonResponse.ok) {
-    console.log(jsonResponse);
-    return;
-  }
-
-  count.innerHTML = jsonResponse.new_heart_count;
-  if (jsonResponse.new_hearted) {
+  count.innerHTML = response.new_heart_count;
+  if (response.new_hearted) {
     icon.classList.add(HEARTED_CLASS);
     icon.classList.remove(UNHEARTED_CLASS);
   } else {
@@ -51,19 +30,10 @@ function init() {
     const count = widget.querySelector('span');
     const button = widget.querySelector('button');
     const icon = widget.querySelector('i');
-    
-    widget.heart_busy = false;
-    button.addEventListener("click", async function () {
-      if (widget.heart_busy)
-        return;
-      
-      widget.heart_busy = true;
-      try {
-        await heart(deck_id, icon, count);
-      } finally {
-        widget.heart_busy = false;
-      }
-    })
+    register_button(button, async function() {
+      await heart(deck_id, icon, count);
+    });
   }
 }
+
 window.addEventListener("load", init);

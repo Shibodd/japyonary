@@ -1,0 +1,72 @@
+{% extends "japyonary/base.html" %}
+{% load crispy_forms_tags %}
+{% load decks_filters %}
+{% load static %}
+
+{% block head %}
+
+<script type="text/javascript" src="{% static 'decks/ajax_buttons.js' %}"></script>
+<script type="text/javascript" src="{% static 'decks/toggle_entry.js' %}"></script>
+
+<style>
+  .deck-entry-unowned * {
+    {% if deck_edit_mode %}
+    background: #FAFAFA !important;
+    color: #6c757d !important;
+    {% else %}
+    display: none !important;
+    {% endif %}
+  }
+</style>
+  
+{% endblock %}
+
+{% block body %}
+  {% csrf_token %}
+  <main class="container">
+    <h1 class="mb-3">
+      Vocabulary in deck 
+      <a class="link-dark" href="{% url 'decks:deck_detail' deck.pk %}"> {{ deck.name }} </a>
+      by
+      <a class="link-dark" href="{% url 'users:user_profile' deck.owner.username %}"> {{ deck.owner.username }} </a>
+    </h1>
+
+    {% if user == deck.owner %}
+      <div class="mt-3 mb-3">
+        {% if deck_edit_mode %}
+          <small>You are editing your own deck.</small>
+        {% else%}
+          <small>You own this deck.</small>
+        {% endif %}
+        <div>
+          {% if deck_edit_mode %}
+            <a class="btn btn-primary" href="{% url 'decks:deck_vocabulary' deck.pk %}">Exit edit mode</a>
+          {% else %}
+            <a class="btn btn-primary" href="{% url 'decks:deck_vocabulary_edit' deck.pk %}">Enter edit mode</a>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    <input type="hidden" name="japyonary-deck-id" value="{{ deck.pk }}"></input>
+
+    {% crispy search_bar_form %}
+
+    {% if is_searching %}
+      <p> {{ page_obj.paginator.count }} search results. </p>
+      {% if entries.count > 0 %}
+      <ul class="list-group">
+        {% for entry in entries %}
+          
+          <li class="list-group-item deck-entry {% if not deck|deck_contains_entry:entry %} deck-entry-unowned {% endif %}" data-id="{{ entry.pk }}">
+            {% include "decks/deck_entry_card.html" %}
+          </li>
+        {% endfor %}
+      </ul>
+      {% endif %} {# entries.count #}
+
+      {% include "japyonary/paginator_widget.html" %}
+    {% else %}
+    {% endif %} {# is_searching #}
+  </main>
+{% endblock %}

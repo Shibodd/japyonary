@@ -6,7 +6,7 @@ from crispy_forms.bootstrap import StrictButton
 class SearchBarForm(forms.Form):
   query = forms.CharField(required=False)
 
-  def __init__(self, placeholder, mode_choices=None, mode_field_name='mode', form_id='search_bar_form', method='get', *args, **kwargs):
+  def __init__(self, placeholder, mode_choices=None, query_field_name='query', mode_field_name='mode', form_id='search_bar_form', method='get', *args, **kwargs):
     super().__init__(*args, **kwargs)
 
     if mode_choices and mode_field_name:
@@ -14,6 +14,11 @@ class SearchBarForm(forms.Form):
       self.fields[self.mode_field_name] = forms.ChoiceField(choices=mode_choices, required=False)
     else:
       self.mode_field_name = None
+
+    if not query_field_name:
+      raise Exception("Query field name must be filled.")
+
+    self.query_field_name = query_field_name
 
     self.helper = FormHelper()
     self.helper.form_show_labels = False
@@ -24,7 +29,7 @@ class SearchBarForm(forms.Form):
     if self.mode_field_name:
       layout_fields.append(Field(self.mode_field_name, template='japyonary/field_nomargin.html'))
 
-    layout_fields.append(Field('query', placeholder=placeholder, wrapper_class='flex-grow-1 mb-0', template='japyonary/field_nomargin.html'))
+    layout_fields.append(Field(self.query_field_name, placeholder=placeholder, wrapper_class='flex-grow-1 mb-0', template='japyonary/field_nomargin.html'))
     layout_fields.append(StrictButton('<i class="bi bi-search"></i>', type="submit", css_class="btn"))
 
     self.helper.layout = Layout(Div(*layout_fields, css_class='d-flex m-0 p-0'))  
