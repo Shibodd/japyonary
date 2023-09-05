@@ -6,17 +6,7 @@
 
   {% if is_searching %}
     <p> {{ page_obj.paginator.count }} search results. </p>
-    {% if entries.count > 0 %}
-      <ul class="list-group">
-        {% for entry in entries %}
-          <li class="list-group-item">
-            {% include "dictionary/dictionary_view_entry_card.html" %}
-          </li>
-        {% endfor %}
-      </ul>
-
-      {% include "japyonary/paginator_widget.html" %}
-    {% endif %} {# entries.count #}
+    {% include "dictionary/entry_list.html" %}
   {% else %}
   {% endif %} {# is_searching #}
 

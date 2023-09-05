@@ -8,3 +8,9 @@ def normalize_query(s: str):
   if len(s) == 0:
     return None
   return s
+
+import django.contrib.auth.decorators
+@django.contrib.auth.decorators.login_required
+def login_required_test(request):
+  """ Returns an HTTPResponse if the login_required test fails. Otherwise, it returns None."""
+  return None

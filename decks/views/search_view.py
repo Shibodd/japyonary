@@ -8,7 +8,7 @@ from decks import models
 from japyonary import utils
 
 # Create your views here.
-class SearchView(ListView):
+class DeckSearchView(ListView):
   template_name = 'decks/search.html'
   model = models.Deck
   context_object_name = 'decks'

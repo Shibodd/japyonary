@@ -1,17 +1,18 @@
 {% load decks_filters %}
 
-<div class="heart-widget" data-id="{{ deck.pk }}">
-  {% if user.is_authenticated %}
-    <button class="heart-btn btn p-0">
+{% if user.is_authenticated and deck.owner != user %}
+  <div class="heart-widget" data-id="{{ deck.pk }}">
+    <button class="heart-btn btn p-0 w-100 h-100">
       {% if deck|is_hearted_by:user %}
-        <i class="bi bi-heart-fill"></i>
+        <i class="bi bi-heart-fill" style="color:red;"></i>
       {% else %}
-        <i class="bi bi-heart"></i>
+        <i class="bi bi-heart" style="color:red;"></i>
       {% endif %}
+{% else %}
+      <i class="bi bi-heart" style="color:red;"></i>
+{% endif %}
+      <span> {{ deck.hearts.count }} </span>
+{% if user.is_authenticated and deck.owner != user %}  
     </button>
-  {% else %}
-    <i class="bi bi-heart"></i>
-  {% endif %}
-
-  <span> {{ deck.heart_count }} </span>
-</div>
+  </div>
+{% endif %}
