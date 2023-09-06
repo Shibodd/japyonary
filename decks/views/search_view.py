@@ -1,5 +1,6 @@
 from typing import Any, Dict
 from django.db.models.query import QuerySet
+from django.db.models import Q
 from django.views.generic import ListView
 from django.http.request import HttpRequest
 from japyonary.forms.search_bar import SearchBarForm
@@ -37,12 +38,16 @@ class DeckSearchView(ListView):
     return ctx
   
   def get_queryset(self) -> QuerySet[Any]:
-    if not self.is_searching:
-      return models.Deck.objects.top()
+    fil = Q(is_private = False)
+    if self.request.user.is_authenticated:
+      fil = fil | Q(owner = self.request.user)
+
+    if self.is_searching:
+      MODE_FILTER_LOOKUP = {
+        'author': 'owner__username__icontains',
+        'title': 'name__icontains',
+        'description': 'description__icontains'
+      }
+      fil = fil & Q(**{ MODE_FILTER_LOOKUP[self.mode]: self.query })
     
-    MODE_FILTER_LOOKUP = {
-      'author': 'owner__username__icontains',
-      'title': 'name__icontains',
-      'description': 'description__icontains'
-    }
-    return models.Deck.objects.filter(**{ MODE_FILTER_LOOKUP[self.mode]: self.query }).top()
+    return models.Deck.objects.filter(fil).top()

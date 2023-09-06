@@ -2,15 +2,15 @@ from django.db import models
 from users.models import User
 from dictionary.models import Entry
 
-class DeckManager(models.Manager):
+class DeckQuerySet(models.QuerySet):
   def top(self):
     return self \
     .annotate(heart_count=models.Count('hearts')) \
     .order_by('-heart_count')
-
+  
 # Create your models here.
 class Deck(models.Model):
-  objects = DeckManager()
+  objects = models.Manager.from_queryset(DeckQuerySet)()
 
   owner = models.ForeignKey(User, on_delete=models.CASCADE, null=False, related_name='owned_decks')
   dictionary_entries = models.ManyToManyField(Entry)
