@@ -15,6 +15,12 @@ def login_required_test(request):
   """ Returns an HTTPResponse if the login_required test fails. Otherwise, it returns None."""
   return None
 
+def user_passes_test(fun):
+  @django.contrib.auth.decorators.user_passes_test(fun)
+  def test(request):
+    return None
+  return test
+
 import json
 from django.http import JsonResponse
 from django.core.exceptions import BadRequest

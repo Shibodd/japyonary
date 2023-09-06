@@ -13,7 +13,19 @@
   <main class="container">
     {% crispy search_bar_form %}
 
-    <p> {{ page_obj.paginator.count }} search results. </p>
+    <div class="d-flex mt-3 mb-3">
+      {% if is_searching %}
+      <h2> {{ page_obj.paginator.count }} search results. </h2>
+      {% else %}
+      <h2> Top decks </h2>
+      {% endif %}
+
+      <span class="flex-grow-1"></span>
+      <div>
+        <a class="btn btn-primary" href="{% url 'decks:deck_create' %}"> Create a new empty deck </a>
+      </div>
+    </div>
+
     {% if page_obj.paginator.count > 0 %}
       {% include "decks/deck_list.html" %}
       {% include "japyonary/paginator_widget.html" %}

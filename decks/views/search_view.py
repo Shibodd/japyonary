@@ -26,6 +26,7 @@ class DeckSearchView(ListView):
 
   def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
     ctx = super().get_context_data(**kwargs)
+    ctx["is_searching"] = self.is_searching
     ctx["search_bar_form"] = SearchBarForm(
       placeholder='Enter a search query...',
       mode_choices=[

@@ -22,7 +22,8 @@ class Deck(models.Model):
   cover_image = models.ImageField(upload_to='deck_cover_images', blank=True)
 
   def is_hearted_by(self, user: User):
-    return self.hearts.contains(user)
+    return self.hearts.contains(user) 
+    
 
 class Comment(models.Model):
   deck = models.ForeignKey(Deck, on_delete=models.CASCADE, null=False)

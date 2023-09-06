@@ -1,0 +1,9 @@
+{% extends "japyonary/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block body %}
+<main class="container">
+  <h2> You're creating a new deck. </h2>
+  {% crispy form %}
+</main>
+{% endblock %}

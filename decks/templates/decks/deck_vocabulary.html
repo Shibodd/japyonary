@@ -33,18 +33,26 @@
 
     {% if user == deck.owner %}
       <div class="mt-3 mb-3">
-        {% if deck_edit_mode %}
-          <small>You are editing your own deck.</small>
-        {% else%}
-          <small>You own this deck.</small>
-        {% endif %}
-        <div>
+        <div class="mb-3">
+          {% if deck_edit_mode %}
+            <small>You are editing your own deck.</small>
+          {% else%}
+            <small>You own this deck.</small>
+          {% endif %}
+        </div>
+        <div class="mb-3">
           {% if deck_edit_mode %}
             <a class="btn btn-primary" href="{% url 'decks:deck_vocabulary' deck.pk %}">Exit edit mode</a>
           {% else %}
             <a class="btn btn-primary" href="{% url 'decks:deck_vocabulary_edit' deck.pk %}">Enter edit mode</a>
           {% endif %}
         </div>
+        
+        {% if deck_edit_mode %}
+        <div>
+          {% crispy import_vocab_from_file_form %}
+        </div>
+        {% endif %}
       </div>
     {% endif %}
 

@@ -1,1 +1,2 @@
 from .add_comment_form import AddCommentForm
+from .import_vocab_from_file_form import ImportVocabFromFileForm

@@ -7,19 +7,36 @@ from django import http
 
 from dictionary.views import DictionarySearchView
 from django.core.exceptions import BadRequest
-
-def mandatory(obj):
-  if obj is None:
-    raise BadRequest()
-  return obj
+from decks.forms import ImportVocabFromFileForm
+from decks import vocab_parsing
 
 class DeckVocabularyView(DictionarySearchView):
   template_name = 'decks/deck_vocabulary.html'
 
-  def get(self, request: HttpRequest, *args, **kwargs):
-    self.deck = Deck.objects.get(
-      pk = mandatory(self.request.resolver_match.kwargs.get('slug'))
+  def fill_deck_field(self, slug):
+    self.deck = Deck.objects.filter(pk = slug).first()
+    if self.deck is None:
+      raise BadRequest("Deck does not exist.")
+
+  def post(self, request: HttpRequest, slug, *args, **kwargs):
+    self.fill_deck_field(slug)
+
+    file = request.FILES.get('uploaded_vocabulary_file')
+    if not file:
+      raise BadRequest("No file provided for uplod.")
+    
+    entry_ids = vocab_parsing.get_entries_from_file(file)
+
+    Deck.dictionary_entries.through.objects.bulk_create(
+      (Deck.dictionary_entries.through(deck_id = slug, entry_id = entry_id) for entry_id in entry_ids),
+      ignore_conflicts = True
     )
+
+    return http.HttpResponse('ok')
+
+
+  def get(self, request: HttpRequest, slug, *args, **kwargs):
+    self.fill_deck_field(slug)
     
     self.deck_edit_mode = \
       request.resolver_match.url_name == 'deck_vocabulary_edit' \
@@ -34,7 +51,8 @@ class DeckVocabularyView(DictionarySearchView):
     ctx = super().get_context_data(**kwargs)
     ctx.update({
       'deck': self.deck,
-      'deck_edit_mode': self.deck_edit_mode
+      'deck_edit_mode': self.deck_edit_mode,
+      'import_vocab_from_file_form': ImportVocabFromFileForm(self.deck.pk)
     })
     return ctx
 

@@ -1,10 +1,13 @@
-<div class="album py-5">
+{% load static %}
+{% load decks_filters %}
+
+<div class="album">
   <div class="row">
     {% for deck in decks %}
       <div class="col-lg-4">
         <div class="card mb-4 box-shadow">
           <a href="{% url 'decks:deck_detail' deck.pk %}" style="max-height: 225px; overflow: hidden">
-            <img class="card-img-top" src="{{ deck.cover_image.url }}"></img>
+            <img src="{{ deck|deck_image_url_or_empty }}" class="card-img-top"> </img>
           </a>
           <div class="card-body text-wrap">
             <h5 class="card-title">{{ deck.name }} </h5>

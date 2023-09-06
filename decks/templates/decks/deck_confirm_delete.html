@@ -1,0 +1,18 @@
+{% extends 'japyonary/base.html' %}
+
+{% block body %}
+<main class="container">
+  <form method="post">{% csrf_token %}
+    <h1 class="display-5">Are you sure you want to delete deck "{{ object.name }}"?</h1>
+    <p class="lead"> Remember that hearts, comments and vocabulary will be lost FOREVER! </p>
+    <p class="lead"> This will NOT affect your SRS. </p>
+    
+    {{ form }}
+
+    <div class="d-flex">
+      <input class="btn btn-danger" type="submit" value="Confirm">
+      <button class="btn btn-primary flex-grow-1 mx-3"> Cancel </button>
+    </div>
+  </form>
+</main>
+{% endblock %}

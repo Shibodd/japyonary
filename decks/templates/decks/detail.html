@@ -1,6 +1,7 @@
 {% extends 'japyonary/base.html' %}
 {% load static %}
 {% load crispy_forms_tags %}
+{% load decks_filters %}
 
 {% block head %}
 
@@ -17,18 +18,28 @@
     <div class="d-flex">
       <div class="m-3 d-flex align-items-center">
         <div style="width: 10em; height: auto;">
-          <img src="{{ deck.cover_image.url }}" class="shadow" style="width: 100%; height: 100%;"></img>
+          <img src="{{ deck|deck_image_url_or_empty }}" class="shadow" style="width: 100%; height: 100%;"></img>
         </div>
       </div>
       <div class="flex-grow-1 text-wrap">
         <div class="d-flex">
           <h1 class="flex-grow-1 text-wrap"> {{ deck.name }} </h1>
           <div class="d-flex m-2">
-            <a class="btn btn-primary" href="{% url 'decks:deck_vocabulary' deck.pk %}"> View vocabulary </a>
-            <a class="btn btn-primary" style="margin-left: 0.5em;"> Clone deck </a>
-            <div style="margin-left: 0.5em; margin-top: 0.5em;">
+            <div class="mx-3 mt-2">
               {% include 'decks/heart_widget.html' %}
             </div>
+            <a class="btn btn-primary" href="{% url 'decks:deck_vocabulary' deck.pk %}"> View vocabulary ({{ deck.dictionary_entries.count }}) </a>
+            <form action="{% url 'decks:deck_clone' %}" method="post" id="cloneDeck">
+              {% csrf_token %}
+              <input type="hidden" value="{{ deck.pk }}" name="deck_id" />
+              <button class="btn btn-primary mx-1" type="submit"> Clone deck </button>
+            </form>
+
+            {% if request.user == deck.owner %}
+            <form action="{% url 'decks:deck_delete' deck.pk %}" method="get" id="deleteForm">
+              <button type="submit" class="btn btn-danger ml-1"> Delete deck </button>
+            </form>
+            {% endif %}
           </div>
         </div>
         <a href="{% url 'users:user_profile' deck.owner.username %}" class="text-muted"> by {{ deck.owner.username }} </a>
