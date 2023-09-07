@@ -1,0 +1,9 @@
+{% extends "japyonary/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block body %}
+<main class="container">
+  <h2> You're updating deck {% include 'decks/deck_link.html' %} </h2>
+  {% crispy form %}
+</main>
+{% endblock %}

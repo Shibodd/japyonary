@@ -10,7 +10,7 @@
             <img src="{{ deck|deck_image_url_or_empty }}" class="card-img-top"> </img>
           </a>
           <div class="card-body text-wrap">
-            <h5 class="card-title">{{ deck.name }} </h5>
+            <h5 class="card-title"><a class="link-dark" href="{% url 'decks:deck_detail' deck.pk %}"> {{ deck.name }} </a> </h5>
             <p class="card-text text-truncate">{{ deck.description }}</p>
             <div class="d-flex">
               <div class="flex-grow-1">
