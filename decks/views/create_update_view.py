@@ -1,3 +1,5 @@
+from typing import Any, Optional
+from django.db import models
 from django.forms.models import BaseModelForm
 from django.http import HttpResponse
 from django.views.generic import CreateView, UpdateView
@@ -7,6 +9,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, HTML, Layout, Div
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
+from decks.views.mixins import DeckEditPermissionTestMixin
 
 class CreateUpdateDeckFormMixin():
   fields = [ 'name', 'description', 'is_private', 'cover_image' ]
@@ -42,7 +45,7 @@ class DeckCreateView(LoginRequiredMixin, CreateUpdateDeckFormMixin, CreateView):
   def get_cancel_url(self):
     return reverse('decks:deck_search')
 
-class DeckUpdateView(LoginRequiredMixin, CreateUpdateDeckFormMixin, UpdateView):
+class DeckUpdateView(LoginRequiredMixin, DeckEditPermissionTestMixin, CreateUpdateDeckFormMixin, UpdateView):
   model = Deck
   template_name = "decks/deck_update.html"
   submit_text = 'Update'

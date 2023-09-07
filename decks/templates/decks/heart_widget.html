@@ -1,6 +1,6 @@
 {% load decks_filters %}
 
-{% if user.is_authenticated and deck.owner != user %}
+{% if user.is_authenticated and deck.owner != user and not deck.is_private %}
   <div class="heart-widget" data-id="{{ deck.pk }}">
     <button class="heart-btn btn p-0 w-100 h-100">
       {% if deck|is_hearted_by:user %}
@@ -12,7 +12,7 @@
       <i class="bi bi-heart" style="color:red;"></i>
 {% endif %}
       <span> {{ deck.hearts.count }} </span>
-{% if user.is_authenticated and deck.owner != user %}  
+{% if user.is_authenticated and deck.owner != user and not deck.is_private %}  
     </button>
   </div>
 {% endif %}

@@ -20,10 +20,12 @@
       <h2> Top decks </h2>
       {% endif %}
 
+      {% if user.is_authenticated %}
       <span class="flex-grow-1"></span>
       <div>
         <a class="btn btn-primary" href="{% url 'decks:deck_create' %}"> Create a new empty deck </a>
       </div>
+      {% endif %}
     </div>
 
     {% if page_obj.paginator.count > 0 %}

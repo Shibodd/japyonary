@@ -39,10 +39,12 @@ class DeckSearchView(ListView):
     return ctx
   
   def get_queryset(self) -> QuerySet[Any]:
-    fil = Q(is_private = False)
-    if self.request.user.is_authenticated:
-      fil = fil | Q(owner = self.request.user)
-
+    fil = Q()
+    if not self.request.user.is_superuser:
+      fil = Q(is_private = False)
+      if self.request.user.is_authenticated:
+        fil = fil | Q(owner = self.request.user)
+    
     if self.is_searching:
       MODE_FILTER_LOOKUP = {
         'author': 'owner__username__icontains',

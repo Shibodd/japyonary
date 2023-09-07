@@ -2,8 +2,9 @@ from django.views.generic import View
 from django.core.exceptions import BadRequest, PermissionDenied
 from decks.models import Deck
 from django.shortcuts import redirect
+from django.contrib.auth.mixins import LoginRequiredMixin
 
-class DeckCloneView(View):
+class DeckCloneView(LoginRequiredMixin, View):
   def post(self, request):
     deck_id = request.POST.get('deck_id')
     if not deck_id:

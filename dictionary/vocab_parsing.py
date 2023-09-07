@@ -2,7 +2,7 @@ import io
 import sudachipy.dictionary
 from django.core.files.uploadedfile import UploadedFile
 import itertools
-from dictionary import models
+from dictionary.models import KEle
 
 def __tokenize_text(file: io.TextIOBase,
     sudachi_dict_type = 'full', 
@@ -37,5 +37,5 @@ def get_entries_from_file(file: UploadedFile):
 
   # Now we have to match the word set with our dictionary entries.
   # TODO: CPU goes BRRR, maybe cache this
-  lookup = dict((dbobj['keb'], dbobj['entry_id']) for dbobj in models.KEle.objects.values('entry_id', 'keb'))
+  lookup = dict((dbobj['keb'], dbobj['entry_id']) for dbobj in KEle.objects.values('entry_id', 'keb'))
   return filter(None, (lookup.get(word) for word in words))

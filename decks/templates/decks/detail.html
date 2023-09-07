@@ -45,7 +45,7 @@
               </form>
             </li>
   
-            {% if request.user == deck.owner %}
+            {% if request.user == deck.owner or request.user.is_superuser %}
             <li class="nav-item mx-1 my-1 ms-auto">
               <a class="btn btn-primary" href="{%url 'decks:deck_update' deck.pk %}">
                 Edit
@@ -79,13 +79,17 @@
           {% endfor %}
         </ul>
       {% else %}
+        {% if not deck.is_private %}
         No comments here... Don't you hate this? Say something!
+        {% endif %}
       {% endif %}
-
-      {% if user.is_authenticated %}
+      
+      {% if user.is_authenticated and not deck.is_private %}
         <div class="mt-3 p-3 shadow">
           {% crispy add_comment_form %}
         </div>
+      {% else %}
+      <p> This deck is private, adding comments is disabled. </p>
       {% endif %}
     </div>
   </header>

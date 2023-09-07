@@ -4,11 +4,12 @@ from django.http.request import HttpRequest
 from dictionary.models import Entry
 from decks.models import Deck
 from django import http
+from django.shortcuts import redirect
 
 from dictionary.views import DictionarySearchView
 from django.core.exceptions import BadRequest
 from decks.forms import ImportVocabFromFileForm
-from decks import vocab_parsing
+from dictionary import vocab_parsing
 
 class DeckVocabularyView(DictionarySearchView):
   template_name = 'decks/deck_vocabulary.html'
@@ -28,11 +29,11 @@ class DeckVocabularyView(DictionarySearchView):
     entry_ids = vocab_parsing.get_entries_from_file(file)
 
     Deck.dictionary_entries.through.objects.bulk_create(
-      (Deck.dictionary_entries.through(deck_id = slug, entry_id = entry_id) for entry_id in entry_ids),
+      (Deck.dictionary_entries.through(deck_id = slug, entry_id=entry_id) for entry_id in entry_ids),
       ignore_conflicts = True
     )
 
-    return http.HttpResponse('ok')
+    return redirect('decks:deck_vocabulary', slug=self.deck.pk)
 
 
   def get(self, request: HttpRequest, slug, *args, **kwargs):
