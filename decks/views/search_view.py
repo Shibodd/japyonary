@@ -39,11 +39,7 @@ class DeckSearchView(ListView):
     return ctx
   
   def get_queryset(self) -> QuerySet[Any]:
-    fil = Q()
-    if not self.request.user.is_superuser:
-      fil = Q(is_private = False)
-      if self.request.user.is_authenticated:
-        fil = fil | Q(owner = self.request.user)
+    qs = models.Deck.objects.viewable_by(self.request.user)
     
     if self.is_searching:
       MODE_FILTER_LOOKUP = {
@@ -51,6 +47,6 @@ class DeckSearchView(ListView):
         'title': 'name__icontains',
         'description': 'description__icontains'
       }
-      fil = fil & Q(**{ MODE_FILTER_LOOKUP[self.mode]: self.query })
+      qs.filter(**{ MODE_FILTER_LOOKUP[self.mode]: self.query })
     
-    return models.Deck.objects.filter(fil).top()
+    return qs

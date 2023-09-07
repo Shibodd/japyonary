@@ -20,5 +20,5 @@ class HomepageView(TemplateView):
     if self.request.user.is_authenticated:
       pass
     else:
-      ctx['decks'] = Deck.objects.top()[:3]
+      ctx['decks'] = Deck.objects.viewable_by(self.request.user).top()[:3]
     return ctx

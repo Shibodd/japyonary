@@ -1,4 +1,4 @@
 deck 
 <a class="link-dark" href="{% url 'decks:deck_detail' deck.pk %}"> {{ deck.name }} </a>
 by
-<a class="link-dark" href="{% url 'users:user_profile' deck.owner.username %}"> {{ deck.owner.username }} </a>
+<a class="link-dark" href="{% url 'decks:deck_search'%}?mode=author&query={{ deck.owner.username }}"> {{ deck.owner.username }} </a>

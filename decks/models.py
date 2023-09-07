@@ -2,11 +2,21 @@ from django.db import models
 from users.models import User
 from dictionary.models import Entry
 
+
 class DeckQuerySet(models.QuerySet):
   def top(self):
     return self \
     .annotate(heart_count=models.Count('hearts')) \
     .order_by('-heart_count', '-creation_timestamp')
+  
+  def viewable_by(self, user):
+    fil = models.Q()
+    if not user.is_superuser:
+      fil = models.Q(is_private = False)
+      if user.is_authenticated:
+        fil = fil | models.Q(owner = user)
+
+    return self.filter(fil)
   
 # Create your models here.
 class Deck(models.Model):
