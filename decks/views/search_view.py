@@ -47,6 +47,6 @@ class DeckSearchView(ListView):
         'title': 'name__icontains',
         'description': 'description__icontains'
       }
-      qs.filter(**{ MODE_FILTER_LOOKUP[self.mode]: self.query })
+      qs = qs.filter(**{ MODE_FILTER_LOOKUP[self.mode]: self.query })
     
     return qs
