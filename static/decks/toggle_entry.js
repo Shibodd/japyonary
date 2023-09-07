@@ -41,4 +41,4 @@ function init() {
   }
 }
 
-window.addEventListener("load", init);
+document.addEventListener("DOMContentLoaded", init);

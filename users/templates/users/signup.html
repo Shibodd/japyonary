@@ -1,0 +1,12 @@
+{% extends 'japyonary/base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block body %}
+  <main class="container">
+    <form method="post"> {% csrf_token %}
+      {{ form | crispy }}
+      <input type="submit" class="btn btn-success" value="Sign Up">
+    </form>
+  </main>
+{% endblock %}

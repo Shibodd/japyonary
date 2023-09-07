@@ -7,9 +7,11 @@
 <script type="text/javascript" src="{% static 'decks/heart.js' %}"></script>
 {% endblock %}
 
+{% block 'navbar-highlighed-url' %} #nav-url-deck {% endblock %}
+
 {% block body %}
   {% csrf_token %}
-
+  
   <main class="container">
     {% crispy search_bar_form %}
 

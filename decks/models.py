@@ -6,7 +6,7 @@ class DeckQuerySet(models.QuerySet):
   def top(self):
     return self \
     .annotate(heart_count=models.Count('hearts')) \
-    .order_by('-heart_count')
+    .order_by('-heart_count', '-creation_timestamp')
   
 # Create your models here.
 class Deck(models.Model):
@@ -20,6 +20,7 @@ class Deck(models.Model):
   description = models.TextField(blank=True, null=True)
   is_private = models.BooleanField(null=False, default=True)
   cover_image = models.ImageField(upload_to='deck_cover_images', blank=True)
+  creation_timestamp = models.DateTimeField(auto_now_add=True)
 
   def is_hearted_by(self, user: User):
     return self.hearts.contains(user) 

@@ -1,0 +1,42 @@
+{% extends 'japyonary/base.html' %}
+
+{% load crispy_forms_tags %}
+{% load static %}
+
+
+{% block head %}
+  {% if not user.is_authenticated %}
+    <script type="text/javascript" src="{% static 'decks/ajax_buttons.js' %}"></script>
+    <script type="text/javascript" src="{% static 'decks/heart.js' %}"></script>
+  {% endif %}
+{% endblock %}
+
+{% block body %}
+  <main class="container mb-5">
+    <div class="jumbotron jumbotron-fluid text-center">
+      <h1 class="display-4">Japyonary</h1>
+      <p class="lead">
+        An SRS with a built-in Japanese dictionary and community-built decks.<br/>
+        The best part? You'll never have to deal with duplicate cards ever again.
+      </p>
+    </div>
+
+    <div class="my-5">
+      {% crispy dictionary_search_bar_form %}
+    </div>
+
+    {% if user.is_authenticated %}
+    {% else %}
+    <div>
+      <h2 class="display-6 "> Top 3 decks </h6>
+
+      {% csrf_token %}
+      {% include 'decks/deck_list.html' %}
+      
+      <div class="text-center">
+        <a class="link-dark display-6 text-center" href="{% url 'decks:deck_search' %}"> View more decks... </a>
+      </div>
+    </div>
+    {% endif %}
+  </main>
+{% endblock %}
