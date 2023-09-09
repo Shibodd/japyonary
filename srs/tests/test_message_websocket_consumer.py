@@ -53,7 +53,7 @@ class MessageWebsocketConsumerTests(TestCase):
       })
     
     mock_test_handler.assert_not_called()
-    mock_close.assert_awaited()
+    mock_close.assert_awaited_once()
     mock_send_json.assert_awaited_once()
 
     self.assertDictContainsSubset({ 'message': 'panic' }, mock_send_json.call_args_list[0].args[0])

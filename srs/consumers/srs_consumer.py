@@ -6,7 +6,7 @@ from srs.models import Flashcard
 
 class SrsReviewState():
   def __init__(self, user):
-    self.user = user
+    self._user = user
 
   async def start(self):
     pass
@@ -20,11 +20,15 @@ class SrsReviewState():
   def get_current_entry(self) -> Entry:
     pass
 
+  @property
+  def user(self):
+    return self._user
+
 class SrsConsumer(MessageWebsocketConsumer):
   async def update_client(self):
     entry = self.review_state.get_current_entry()
 
-    if entry is None:
+    if not entry:
       await self.send_message('reviews_done')
       await self.close()
     else:
@@ -42,7 +46,6 @@ class SrsConsumer(MessageWebsocketConsumer):
     if not user.is_authenticated:
       return await self.panic('User is not logged in')
 
-    
     self.review_state = SrsReviewState(user)
     await self.review_state.start()
     await self.update_client()
