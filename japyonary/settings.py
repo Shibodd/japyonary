@@ -35,6 +35,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -44,8 +45,9 @@ INSTALLED_APPS = [
     'dictionary',
     'decks',
     'users',
+    'srs',
     'crispy_forms',
-    "crispy_bootstrap5",
+    "crispy_bootstrap5"
 ]
 
 MIDDLEWARE = [
@@ -76,8 +78,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'japyonary.wsgi.application'
-
+# WSGI_APPLICATION = 'japyonary.wsgi.application'
+ASGI_APPLICATION = 'japyonary.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
