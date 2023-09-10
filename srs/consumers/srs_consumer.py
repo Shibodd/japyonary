@@ -1,10 +1,9 @@
-from srs.consumers.message_websocket_consumer import MessageWebsocketConsumer
+from srs.consumers import AsyncMessageDispatchingWebsocketConsumer
 from srs.review import SrsException, SrsReview, SrsBridge
 import functools
 
-class SrsConsumer(MessageWebsocketConsumer, SrsBridge):
-  review = functools.cached_property(SrsReview)
-
+class SrsConsumer(AsyncMessageDispatchingWebsocketConsumer, SrsBridge):
+  review = functools.cached_property(lambda self: SrsReview(self))
 
   # Bridge implementation
   async def srs_new_card(self, html):
@@ -26,32 +25,28 @@ class SrsConsumer(MessageWebsocketConsumer, SrsBridge):
     await self.review.stop()
 
 
-  # Helpers for message handlers
-  def panic_on_srs_exceptions(fn):
-    @functools.wraps(fn)
-    async def wrapper(self):
-      try:
-        await fn()
-      except SrsException as e:
-        await self.panic(e.args.join(' '))
-    return wrapper
-
-
   # Message handlers
-  @panic_on_srs_exceptions
-  async def handle_start_reviews(self):
+  async def receive_message(self, message, **payload):
+    try:
+      await super().receive_message(message, **payload)
+    except SrsException as e:
+      await self.panic(" ".join(e.args))
+
+  async def handle_start_reviews(self, **payload):
     await self.review.start(self.scope['user'])
 
-  @panic_on_srs_exceptions
-  async def handle_answer(self):
-    await self.review.answer()
+  async def handle_answer(self, **payload):
+    confidence = payload.get('confidence')
+    if confidence is None:
+      await self.panic('SRS protocol error')
+    else:
+      await self.review.answer()
 
-  @panic_on_srs_exceptions
-  async def handle_undo(self):
+  async def handle_undo(self, **payload):
     await self.review.undo()
 
   message_handlers = {
     'start_reviews': handle_start_reviews,
     'answer': handle_answer,
-    'undo': handle_undo,
+    'undo': handle_undo
   }

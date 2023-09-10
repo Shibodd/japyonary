@@ -1,10 +1,9 @@
 from django.test import TestCase
-from srs.consumers.async_message_websocket_consumer import AsyncMessageWebsocketConsumer
+from srs.consumers import AsyncMessageWebsocketConsumer
 
 from unittest.mock import patch
 
 class MessageWebsocketConsumerTests(TestCase):
-
   @patch.object(AsyncMessageWebsocketConsumer, 'send_json')
   @patch.object(AsyncMessageWebsocketConsumer, 'close')
   async def test_panic_disconnects(self, mock_close, mock_send_json):

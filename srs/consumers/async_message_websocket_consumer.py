@@ -2,10 +2,10 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 class AsyncMessageWebsocketConsumer(AsyncJsonWebsocketConsumer):
   # Tx
-  async def send_message(self, message, **kwargs):
+  async def send_message(self, message, **payload):
     await self.send_json({
       'message': message,
-      'payload': kwargs
+      'payload': payload
     })
 
   async def panic(self, reason, code = None):
@@ -13,7 +13,7 @@ class AsyncMessageWebsocketConsumer(AsyncJsonWebsocketConsumer):
     await self.close(code)
 
   # Rx
-  async def receive_message(self, message, **kwargs):
+  async def receive_message(self, message, **payload):
     pass
   
   async def receive_json(self, content, **kwargs):

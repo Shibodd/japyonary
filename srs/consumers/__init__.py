@@ -1,1 +1,3 @@
+from srs.consumers.async_message_websocket_consumer import AsyncMessageWebsocketConsumer
+from srs.consumers.async_message_dispatching_websocket_consumer import AsyncMessageDispatchingWebsocketConsumer
 from srs.consumers.srs_consumer import SrsConsumer
