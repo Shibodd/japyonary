@@ -48,7 +48,7 @@ class SrsConsumer(AsyncMessageDispatchingWebsocketConsumer, SrsBridge):
       self.logger.info('User "%s" sent an invalid "answer" message.', self.user.username)
       await self.panic('SRS protocol error')
     else:
-      await self.review.answer()
+      await self.review.answer(confidence)
 
   async def handle_undo(self, **payload):
     await self.review.undo()
