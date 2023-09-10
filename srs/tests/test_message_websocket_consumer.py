@@ -1,5 +1,5 @@
 from django.test import TestCase
-from srs.consumers.message_consumer import MessageWebsocketConsumer
+from srs.consumers.message_websocket_consumer import MessageWebsocketConsumer
 
 from unittest.mock import patch, AsyncMock
 

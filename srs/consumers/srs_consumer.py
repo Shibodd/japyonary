@@ -1,4 +1,4 @@
-from srs.consumers.message_consumer import MessageWebsocketConsumer
+from srs.consumers.message_websocket_consumer import MessageWebsocketConsumer
 from srs.review import SrsException, SrsReview, SrsBridge
 import functools
 
