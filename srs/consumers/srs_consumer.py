@@ -1,74 +1,57 @@
 from srs.consumers.message_consumer import MessageWebsocketConsumer
-from django.template.loader import render_to_string
+from srs.review import SrsException, SrsReview, SrsBridge
+import functools
 
-from dictionary.models import Entry
-from srs.models import Flashcard
+class SrsConsumer(MessageWebsocketConsumer, SrsBridge):
+  review = functools.cached_property(SrsReview)
 
-class SrsReviewState():
-  def __init__(self, user):
-    self._user = user
 
-  async def start(self):
-    pass
-
-  async def answer(self, confidence):
-    pass
-
-  async def undo(self):
-    pass
-
-  def get_current_entry(self) -> Entry:
-    pass
-
-  @property
-  def user(self):
-    return self._user
-
-class SrsConsumer(MessageWebsocketConsumer):
-  async def update_client(self):
-    entry = self.review_state.get_current_entry()
-
-    if not entry:
-      await self.send_message('reviews_done')
-      return await self.close()
-    
-    html = render_to_string('srs/card.html', context = {
-      'entry': entry,
-      'user': self.review_state.user
-    })
+  # Bridge implementation
+  async def srs_new_card(self, html):
     await self.send_message('new_card', html=html)
-      
+  
+  async def srs_reviews_done(self):
+    await self.send_message('reviews_done')
+    await self.close()
 
+
+  # Websocket connection
   async def connect(self):
-    await self.accept()
+    if not self.scope['user'].is_authenticated:
+      await self.close()
+    else:
+      await self.accept()
 
-    user = self.scope['user']
-    if not user.is_authenticated:
-      return await self.panic('User is not logged in')
-
-    self.review_state = SrsReviewState(user)
-    await self.review_state.start()
-    await self.update_client()
+  async def disconnect(self, code):
+    await self.review.stop()
 
 
-  async def answer(self, payload):
-    confidence = payload.get('confidence')
-    if confidence is None:
-      return await self.panic('Bad payload')
-    
-    await self.review_state.answer(confidence)
-    await self.update_client()
+  # Helpers for message handlers
+  def panic_on_srs_exceptions(fn):
+    @functools.wraps(fn)
+    async def wrapper(self):
+      try:
+        await fn()
+      except SrsException as e:
+        await self.panic(e.args.join(' '))
+    return wrapper
 
 
-  async def undo(self, payload):
-    await self.review_state.undo()
-    await self.update_client()
+  # Message handlers
+  @panic_on_srs_exceptions
+  async def handle_start_reviews(self):
+    await self.review.start(self.scope['user'])
 
+  @panic_on_srs_exceptions
+  async def handle_answer(self):
+    await self.review.answer()
+
+  @panic_on_srs_exceptions
+  async def handle_undo(self):
+    await self.review.undo()
 
   message_handlers = {
-    'answer': answer,
-    'undo': undo
+    'start_reviews': handle_start_reviews,
+    'answer': handle_answer,
+    'undo': handle_undo,
   }
-
-  async def disconnect(self, close_code):
-    pass
