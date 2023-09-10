@@ -30,13 +30,13 @@ class SrsConsumer(MessageWebsocketConsumer):
 
     if not entry:
       await self.send_message('reviews_done')
-      await self.close()
-    else:
-      html = render_to_string('srs/card.html', context = {
-        'entry': entry,
-        'user': self.review_state.user
-      })
-      self.send_message('new_card', html=html)
+      return await self.close()
+    
+    html = render_to_string('srs/card.html', context = {
+      'entry': entry,
+      'user': self.review_state.user
+    })
+    await self.send_message('new_card', html=html)
       
 
   async def connect(self):

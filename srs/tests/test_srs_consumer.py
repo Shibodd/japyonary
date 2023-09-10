@@ -30,7 +30,10 @@ class TestSrsConsumer(TestCase):
     mock_review_state_init.assert_not_called()
   
   async def test_no_pending_reviews(self, mock_review_state_init, mock_accept, mock_close, mock_send_message, mock_panic):
-    """ If connecting when no reviews are pending, SrsConsumer should send the reviews_done message and disconnect. """
+    """
+    If connecting when no reviews are pending,
+    SrsConsumer should send the reviews_done message and disconnect.
+    """
 
     consumer = SrsConsumer()
     mock_review_state = mock_review_state_init.return_value
@@ -38,8 +41,6 @@ class TestSrsConsumer(TestCase):
     mock_review_state.get_current_entry.return_value = None
 
     await consumer.connect()
-
-    print(consumer.assert_has_calls)
 
     mock_accept.assert_awaited_once()
     mock_send_message.assert_awaited_once_with('reviews_done')
