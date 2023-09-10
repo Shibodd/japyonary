@@ -1,8 +1,7 @@
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
-class MessageWebsocketConsumer(AsyncJsonWebsocketConsumer):
-  message_handlers = {}
-
+class AsyncMessageWebsocketConsumer(AsyncJsonWebsocketConsumer):
+  # Tx
   async def send_message(self, message, **kwargs):
     await self.send_json({
       'message': message,
@@ -13,11 +12,15 @@ class MessageWebsocketConsumer(AsyncJsonWebsocketConsumer):
     await self.send_message('panic', reason=reason)
     await self.close(code)
 
+  # Rx
+  async def receive_message(self, message, **kwargs):
+    pass
+  
   async def receive_json(self, content, **kwargs):
-    """ Dispatches the message to the designated message handler. """
+    message = content.get('message')
+    payload = content.get('payload', {})
 
-    handler = self.message_handlers.get(content.get('message'))
-    if handler:
-      await handler(self, content.get('payload'))
-    else:
-      await self.panic('Unknown message')
+    if message is None:
+      await self.panic('Protocol error')
+    
+    await self.receive_message(message, **payload)
