@@ -14,27 +14,28 @@ class MessageWebsocketConsumerTests(TestCase):
 
     consumer = MessageWebsocketConsumer()
 
-    payload1 = { 'testValue': 123 }
-    payload2 = { 'myValue': 321 }
+    PAYLOAD_1 = { 'testValue': 123 }
+    PAYLOAD_2 = { 'myValue': 321 }
 
-    handlers = {
+    HANDLERS = {
       'first': consumer.test_handler1,
       'second': consumer.test_handler2
     }
 
-    with patch.dict(consumer.message_handlers, handlers):
+    with patch.dict(consumer.message_handlers, HANDLERS):
       await consumer.receive_json({
         'message': 'first',
-        'payload': payload1
+        'payload': PAYLOAD_1
       })
-      mock_test_handler1.assert_awaited_once_with(consumer, payload1)
+      mock_test_handler1.assert_awaited_once_with(consumer, PAYLOAD_1)
+      mock_test_handler2.assert_not_called()
       mock_test_handler1.reset_mock()
       
       await consumer.receive_json({
         'message': 'second',
-        'payload': payload2
+        'payload': PAYLOAD_2
       })
-      mock_test_handler2.assert_awaited_once_with(consumer, payload2)
+      mock_test_handler2.assert_awaited_once_with(consumer, PAYLOAD_2)
       mock_test_handler1.assert_not_called() # Handler1 shouldn't have been called again
     
     mock_close.assert_not_called()
@@ -53,7 +54,22 @@ class MessageWebsocketConsumerTests(TestCase):
       })
     
     mock_test_handler.assert_not_called()
-    mock_close.assert_awaited_once()
+    mock_close.assert_awaited()
     mock_send_json.assert_awaited_once()
 
     self.assertDictContainsSubset({ 'message': 'panic' }, mock_send_json.call_args_list[0].args[0])
+
+  async def test_panic_disconnects(self, mock_test_handler2, mock_test_handler, mock_close, mock_send_json):
+    """ Panic should result in a 'panic' message sent and a disconnection. """
+
+    REASON = 'test_message'
+
+    consumer = MessageWebsocketConsumer()
+    await consumer.panic(REASON)
+    mock_send_json.assert_awaited_once_with({
+      'message': 'panic',
+      'payload': {
+        'reason': REASON
+      }
+    })
+    mock_close.assert_awaited_once()
