@@ -1,8 +1,10 @@
 from srs.consumers import AsyncMessageDispatchingWebsocketConsumer
 from srs.review import SrsException, SrsReview, SrsBridge
+import logging
 import functools
 
 class SrsConsumer(AsyncMessageDispatchingWebsocketConsumer, SrsBridge):
+  logger = logging.getLogger(__name__)
   review = functools.cached_property(lambda self: SrsReview(self))
 
   # Bridge implementation
@@ -16,9 +18,12 @@ class SrsConsumer(AsyncMessageDispatchingWebsocketConsumer, SrsBridge):
 
   # Websocket connection
   async def connect(self):
-    if not self.scope['user'].is_authenticated:
+    self.user = self.scope['user']
+    if not self.user.is_authenticated:
+      self.logger.info("Refused an unauthenticated connection.")
       await self.close()
     else:
+      self.logger.info('Accepting connection from user "%s".', self.user.username)
       await self.accept()
 
   async def disconnect(self, code):
@@ -30,14 +35,17 @@ class SrsConsumer(AsyncMessageDispatchingWebsocketConsumer, SrsBridge):
     try:
       await super().receive_message(message, **payload)
     except SrsException as e:
-      await self.panic(" ".join(e.args))
+      exc_msg = " ".join(e.args)
+      self.logger.info('User "%s" triggered an SrsException: %s', self.user.username, exc_msg)
+      await self.panic(exc_msg)
 
   async def handle_start_reviews(self, **payload):
-    await self.review.start(self.scope['user'])
+    await self.review.start(self.user)
 
   async def handle_answer(self, **payload):
     confidence = payload.get('confidence')
     if confidence is None:
+      self.logger.info('User "%s" sent an invalid "answer" message.', self.user.username)
       await self.panic('SRS protocol error')
     else:
       await self.review.answer()
