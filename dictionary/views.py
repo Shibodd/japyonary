@@ -77,4 +77,5 @@ class DictionarySearchView(ListView):
       qs = qs.filter(**fil)
     
     return qs.annotate(pri_count=Count('kele__ke_pri') + Count('rele__re_pri')) \
-             .order_by('-pri_count', 'ent_seq')
+             .order_by('-pri_count', 'ent_seq') \
+             .prefetch_everything()
