@@ -1,10 +1,17 @@
 {% extends "japyonary/base.html" %}
 {% load crispy_forms_tags %}
+{% load static %}
 
 {% block 'navbar-highlighed-url' %} #nav-url-dict {% endblock %}
 
+{% block head %}
+<script type="text/javascript" src="{% static 'decks/ajax_buttons.js' %}"></script>
+<script type="text/javascript" src="{% static 'srs/add_flashcard.js' %}"></script>
+{% endblock %}
+
 {% block body %}
   <main class="container">
+    {% csrf_token %}
     {% crispy search_bar_form %}
   
     {% if is_searching %}

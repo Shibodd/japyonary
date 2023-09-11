@@ -1,1 +1,3 @@
-Entry {{ entry.ent_seq }}
+{% load dictionary_filters %}
+
+{{ entry|entry_get_main_reb }}

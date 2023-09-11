@@ -1,13 +1,14 @@
 {% extends "dictionary/entry_card.html" %}
 {% load decks_filters %}
+
 {% block entry_buttons_area_content %}
 
 {% if user.is_authenticated and user == deck.owner %}
 <div>
   {% if deck|deck_contains_entry:entry %}
-  <button class="btn"> <i class="bi bi-dash-circle"></i> </button>
+  <button class="btn add-entry-to-deck-btn"> <i class="bi bi-dash-circle"></i> </button>
   {% else %}
-  <button class="btn"> <i class="bi bi-plus-circle"></i> </button>
+  <button class="btn add-entry-to-deck-btn"> <i class="bi bi-plus-circle"></i> </button>
   {% endif %}
 </div>
 {% endif %}

@@ -32,9 +32,9 @@ function init() {
   for (let i = 0; i < entries.length; ++i) {
     const entry = entries[i];
 
-    const button = entry.querySelector('button');
+    const button = entry.querySelector('button.add-entry-to-deck-btn');
     const entry_id = entry.getAttribute('data-id');
-    const icon = entry.querySelector('i');
+    const icon = button.querySelector('i');
     register_button(button, async function() {
       await toggle_entry(deck_id, entry_id, entry, icon);
     });

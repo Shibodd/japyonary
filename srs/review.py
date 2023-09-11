@@ -83,10 +83,11 @@ class SrsReview():
       await self.bridge.srs_reviews_done()
       self._review_in_progress = False
       return False
+    
 
   async def __next_card(self):
     # TODO: Maybe eventually retrieve them in chunks
-    self.current_card = await Flashcard.objects.expired(self.user, timezone.now()).prefetch_related('entry').afirst()
+    self.current_card = await Flashcard.objects.expired(self.user, timezone.now()).prefetch_everything().afirst()
     await self.__send_current_card()
 
   # Handlers
@@ -139,7 +140,7 @@ class SrsReview():
     self.logger.debug('User "%s" requested an undo.', self.user.username)
     snapshot = self.undo_history.pop()
 
-    flashcard = await Flashcard.objects.filter(pk=snapshot.flashcard_pk).prefetch_related('entry').afirst()
+    flashcard = await Flashcard.objects.filter(pk=snapshot.flashcard_pk).prefetch_everything().afirst()
     if flashcard is None:
       self.logger.warn("Snapshot of non-existing flashcard for user %s!")
       raise SrsException('Flashcards were modified outside the SRS review.')

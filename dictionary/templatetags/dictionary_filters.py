@@ -23,6 +23,25 @@ def entry_get_main_keb(entry: models.Entry):
   else:
     return None
   
+
+@register.filter
+def entry_get_main_reb_prefetched(entry: models.Entry):
+  if entry.rele_set.count() > 1:
+    return entry.rele_set.annotate(count=Count('re_pri')).order_by('count').values('reb')[0]['reb']
+  else:
+    return entry.rele_set.all()[0]
+
+@register.filter
+def entry_get_main_keb_prefetched(entry: models.Entry):
+  kele_count = entry.kele_set.count()
+  if kele_count > 0:
+    if kele_count > 1:
+      return entry.kele_set.annotate(count=Count('ke_pri')).order_by('count').values('keb')[0]['keb']
+    else:
+      return entry.kele_set[0].keb
+  else:
+    return None
+  
 @register.filter
 def sense_get_glosses_str(sense: models.Sense):
   return ', '.join((g['content'] for g in sense.gloss_set.values('content')))

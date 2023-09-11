@@ -4,11 +4,15 @@ from users.models import User
 from dataclasses import dataclass
 from datetime import datetime, date
 
+
 class FlashcardQuerySet(models.QuerySet):
   def expired(self, user, now: datetime):
     return self \
       .filter(models.Q(owner=user) & models.Q(expiration_date__lte=now.date())) \
       .order_by('expiration_date')
+  
+  def prefetch_everything(self):
+    return self.prefetch_related(models.Prefetch('entry', queryset=Entry.objects.prefetch_everything()))
 
 @dataclass
 class FlashcardSnapshot:
@@ -24,9 +28,9 @@ class Flashcard(models.Model):
   owner = models.ForeignKey(User, on_delete=models.CASCADE)
   entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
 
-  leitner_box = models.IntegerField()
-  expiration_date = models.DateField()
-  last_review_timestamp = models.DateTimeField()
+  leitner_box = models.IntegerField(default=0)
+  expiration_date = models.DateField(default=date.min, null=False)
+  last_review_timestamp = models.DateTimeField(null=True)
 
   def get_snapshot(self) -> FlashcardSnapshot:
     return FlashcardSnapshot(

@@ -1,6 +1,16 @@
 import django.db.models as models
 
+class EntryQuerySet(models.QuerySet):
+  def prefetch_everything(self):
+    return self.prefetch_related(models.Prefetch(
+      'kele_set', queryset=KEle.objects.all(),
+    ), models.Prefetch(
+      'rele_set', queryset=REle.objects.all()
+    ))
+
+
 class Entry(models.Model):
+  objects = models.Manager.from_queryset(EntryQuerySet)()
   ent_seq = models.PositiveIntegerField(primary_key=True)
 
 class Entity(models.Model):

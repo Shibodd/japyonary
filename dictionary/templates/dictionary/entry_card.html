@@ -1,37 +1,46 @@
 {% load dictionary_filters %}
+{% load srs_filters %}
 
-{% with main_keb=entry|entry_get_main_keb main_reb=entry|entry_get_main_reb %}
-  <div class="d-flex">
-    <div class="flex-grow-1">
-      <span class="fs-3 text-normal me-3">
-        {% if main_keb %} {{ main_keb }} {% else %} {{ main_reb }} {% endif %}
-      </span>
-      {% if main_keb %}
-        <span class="text-normal"> {{ main_reb }} </span>
-      {% endif %}
-    </div>
-    {% block entry_buttons_area_content %} {% endblock %}
-  </div>
-{% endwith %}
-
-<ul class="list-group">
-  {% for sense in entry.sense_set.all %}
-    <li class="list-group-item" style="background:transparent">
-      <p class="text-wrap mb-0">
-        {% for pos in sense.pos.all %}
-          <span class="badge text-muted">
-            {{ pos.desc }}
-          </span>
-        {% endfor %}
-      </p>
-      {{ sense|sense_get_glosses_str }}
-
-      {% with only_applies_to=sense|sense_get_only_applies_to %}
-        {% if only_applies_to %}
-          <br/>
-          <small class="text-muted"> Only applies to {{ only_applies_to }} </small>
+<div class="dictionary-entry" data-id="{{ entry.pk }}">
+  {% with main_keb=entry|entry_get_main_keb main_reb=entry|entry_get_main_reb %}
+    <div class="d-flex">
+      <div class="flex-grow-1">
+        <span class="fs-3 text-normal me-3">
+          {% if main_keb %} {{ main_keb }} {% else %} {{ main_reb }} {% endif %}
+        </span>
+        {% if main_keb %}
+          <span class="text-normal"> {{ main_reb }} </span>
         {% endif %}
-      {% endwith %}
-    </li>
-  {% endfor %}
-</ul>
+      </div>
+      
+      <div class="add-flashcard-widget" data-id="{{ entry.pk }}">
+        <button class="add-flashcard-btn btn p-0 w-100 h-100" {% if entry|is_in_user_srs:user %} disabled {% endif %}>
+          <i class="bi bi-wallet2"></i>
+        </button>
+      </div>
+      {% block entry_buttons_area_content %} {% endblock %}
+    </div>
+  {% endwith %}
+
+  <ul class="list-group">
+    {% for sense in entry.sense_set.all %}
+      <li class="list-group-item" style="background:transparent">
+        <p class="text-wrap mb-0">
+          {% for pos in sense.pos.all %}
+            <span class="badge text-muted">
+              {{ pos.desc }}
+            </span>
+          {% endfor %}
+        </p>
+        {{ sense|sense_get_glosses_str }}
+
+        {% with only_applies_to=sense|sense_get_only_applies_to %}
+          {% if only_applies_to %}
+            <br/>
+            <small class="text-muted"> Only applies to {{ only_applies_to }} </small>
+          {% endif %}
+        {% endwith %}
+      </li>
+    {% endfor %}
+  </ul>
+</div>
