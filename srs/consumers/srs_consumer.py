@@ -8,8 +8,8 @@ class SrsConsumer(AsyncMessageDispatchingWebsocketConsumer, SrsBridge):
   review = functools.cached_property(lambda self: SrsReview(self))
 
   # Bridge implementation
-  async def srs_new_card(self, html):
-    await self.send_message('new_card', html=html)
+  async def srs_new_card(self, html, undo_available):
+    await self.send_message('new_card', html=html, undo_available=undo_available)
   
   async def srs_reviews_done(self):
     await self.send_message('reviews_done')
@@ -27,7 +27,8 @@ class SrsConsumer(AsyncMessageDispatchingWebsocketConsumer, SrsBridge):
       await self.accept()
 
   async def disconnect(self, code):
-    await self.review.stop()
+    if self.review.review_in_progress:
+      await self.review.stop()
 
 
   # Message handlers

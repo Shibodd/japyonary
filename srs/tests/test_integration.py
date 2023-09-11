@@ -17,8 +17,7 @@ from dictionary.management.commands.load_dictionary import update_db as update_d
 
 from srs.models import Flashcard
 from dictionary.models import Entry
-
-from asyncio import sleep
+from srs.tests.generate_flashcards import generate_flashcards
 
 application = AuthMiddlewareStack(URLRouter([
   path('ws/', SrsConsumer.as_asgi())
@@ -37,7 +36,6 @@ class MessageWebsocketCommunicator(WebsocketCommunicator):
 
 class SrsIntegrationTests(TestCase):
   def setUp(self) -> None:
-    logging.basicConfig(level=logging.DEBUG)
     self.user = User.objects.get_or_create(username='testuser')[0]
 
   async def __create_communicator_and_connect(self) -> MessageWebsocketCommunicator:
@@ -47,18 +45,18 @@ class SrsIntegrationTests(TestCase):
     self.assertTrue(connected, "Could not connect.")
     return communicator
   
-  async def __assert_reception_of_reviews_done(self):
+  async def __assert_reception_of_reviews_done(self, communicator):
     message, _ = await communicator.receive_message_from()
     self.assertEqual(message, "reviews_done")
   
-  async def __test_no_pending_reviews(self):
+  async def test_no_pending_reviews(self):
     """
     Disconnect with reviews_done when no reviews are pending.
     """
 
     communicator = await self.__create_communicator_and_connect()
     await communicator.send_message_to('start_reviews')
-    await self.__assert_reception_of_reviews_done()
+    await self.__assert_reception_of_reviews_done(communicator)
 
     await communicator.disconnect()
     await communicator.wait()
@@ -67,41 +65,18 @@ class SrsIntegrationTests(TestCase):
     """
     Succesfully complete an SRS session in which the user answers all cards.
     """
-    ENTRY_COUNT = 5
     EXPIRED_ENTRY_COUNT = 3
-
-    @database_sync_to_async
-    def create_flashcards():
-      update_db_from_jmd(jmdict.Jmdict([
-        jmdict.Entry(
-          i,
-          k_ele=[], 
-          r_ele=[jmdict.REle(f'test{i}', [], [])],
-          sense=[]
-        ) 
-        for i in range(ENTRY_COUNT) 
-      ]))
-
-      flashcards = (Flashcard(
-        owner=self.user,
-        entry=entry,
-        leitner_box=0,
-        expiration_timestamp=timezone.now() - timedelta(days=1 if i < EXPIRED_ENTRY_COUNT else -1),
-        last_review_date=timezone.now() - timedelta(days=30)
-      ) for i, entry in enumerate(Entry.objects.all()))
-
-      Flashcard.objects.bulk_create(flashcards)
-
-    await create_flashcards()
+    await generate_flashcards(self.user, EXPIRED_ENTRY_COUNT, 2)
 
     communicator = await self.__create_communicator_and_connect()
     await communicator.send_message_to('start_reviews')
     for _ in range(EXPIRED_ENTRY_COUNT):
       message, _ = await communicator.receive_message_from()
       self.assertEqual(message, 'new_card')
+      
       await communicator.send_message_to('answer', confidence=2)
-    
-    self.__assert_reception_of_reviews_done()
+
+    await self.__assert_reception_of_reviews_done(communicator)
 
     await communicator.disconnect()
     await communicator.wait()

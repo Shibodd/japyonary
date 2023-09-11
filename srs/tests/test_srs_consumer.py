@@ -14,7 +14,7 @@ class TestSrsConsumer(TestCase):
   # Helpers
   def __create_consumer_with_user_auth(is_authenticated):
     consumer = SrsConsumer()
-    consumer.scope = { 'user': SimpleNamespace(is_authenticated = is_authenticated) }
+    consumer.scope = { 'user': SimpleNamespace(username='testuser', is_authenticated=is_authenticated) }
     return consumer
   
   async def __create_and_connect_consumer_with_asserts(self, mock_accept, mock_close, mock_review_init):

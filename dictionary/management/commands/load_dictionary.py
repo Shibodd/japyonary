@@ -9,6 +9,9 @@ import dictionary.models as models
 import pickle
 import itertools
 import romkan
+import logging
+
+LOGGER = logging.getLogger(__name__)
 
 def load_jmd_xml(path: Path) -> jmdict_xml.Jmdict:
   if isinstance(path, str):
@@ -16,16 +19,16 @@ def load_jmd_xml(path: Path) -> jmdict_xml.Jmdict:
 
   pickled_path = path.with_suffix(".pickle")
   if pickled_path.exists():
-    print("Found pickled dictionary. Loading...")
+    LOGGER.info("Found pickled dictionary. Loading...")
     with pickled_path.open('rb') as f:
       return pickle.Unpickler(f).load()
       
   else:
-    print("Parsing xml dictionary...")
+    LOGGER.info("Parsing xml dictionary...")
     parser = XmlParser()
     jd = parser.from_path(path, jmdict_xml.Jmdict)
 
-    print("Writing pickled dictionary...")
+    LOGGER.info("Writing pickled dictionary...")
     with pickled_path.open('wb') as f:
       pickle.Pickler(f).dump(jd)
     return jd
@@ -82,7 +85,8 @@ def assign_uids(objects):
     obj.__uid = i
 
 def update_db(jmd: jmdict_xml.Jmdict):
-  print("Resolving links...")
+  
+  LOGGER.info("Resolving links...")
   
   resolve_inter_entry_links(jmd)
 
@@ -95,16 +99,16 @@ def update_db(jmd: jmdict_xml.Jmdict):
   assign_uids(sense for entry in jmd.entry for sense in entry.sense)
   
   # Nuke the db
-  print("Deleting objects...")
+  LOGGER.info("Deleting objects...")
   models.Entity.objects.all().delete()
   models.Entry.objects.all().delete()
 
   # Entry
-  print("Creating entries...")
+  LOGGER.info("Creating entries...")
   models.Entry.objects.bulk_create((models.Entry(ent_seq = entry.ent_seq) for entry in jmd.entry))
 
   # KEle
-  print("Creating KEles...")
+  LOGGER.info("Creating KEles...")
 
   models.KEle.objects.bulk_create(
     models.KEle(
@@ -118,7 +122,7 @@ def update_db(jmd: jmdict_xml.Jmdict):
   )
 
   # REle
-  print("Creating REles...")
+  LOGGER.info("Creating REles...")
   models.REle.objects.bulk_create(
     models.REle(
       uid = r_ele.__uid,
@@ -132,7 +136,7 @@ def update_db(jmd: jmdict_xml.Jmdict):
   )
 
   # Sense
-  print("Creating Senses...")
+  LOGGER.info("Creating Senses...")
   models.Sense.objects.bulk_create(
     models.Sense(
       uid = sense.__uid,
@@ -144,7 +148,7 @@ def update_db(jmd: jmdict_xml.Jmdict):
   )
 
   # LSource
-  print("Creating LSources...")
+  LOGGER.info("Creating LSources...")
   models.LSource.objects.bulk_create(
     models.LSource(
       sense_id = sense.__uid,
@@ -159,7 +163,7 @@ def update_db(jmd: jmdict_xml.Jmdict):
   )
 
   # Gloss
-  print("Creating Glosses...")
+  LOGGER.info("Creating Glosses...")
   models.Gloss.objects.bulk_create(
     models.Gloss(
       sense_id = sense.__uid,
@@ -174,7 +178,7 @@ def update_db(jmd: jmdict_xml.Jmdict):
   )
 
   # Entity
-  print("Creating entities...")
+  LOGGER.info("Creating entities...")
   # Create an entity lookup based on the entity description
   entity_lookup = dict(
     (entity.desc, entity.uid)
@@ -188,7 +192,7 @@ def update_db(jmd: jmdict_xml.Jmdict):
   )
 
   # Create all many to many relationships
-  print("Creating relationships...")
+  LOGGER.info("Creating relationships...")
   models.KEle.ke_inf.through.objects.bulk_create(
     models.KEle.ke_inf.through(kele_id=k_ele.__uid, entity_id=entity_lookup[ke_inf])
     for entry in jmd.entry
@@ -257,5 +261,5 @@ class Command(BaseCommand):
 
   def handle(self, *args, **options):
     jmd = load_jmd_xml(options['jmdict_path'])
-    print("Dictionary loaded!")
+    LOGGER.info("Dictionary loaded!")
     update_db(jmd)
