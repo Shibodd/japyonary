@@ -9,7 +9,7 @@ class FlashcardQuerySet(models.QuerySet):
   def expired(self, user, now: datetime):
     return self \
       .filter(models.Q(owner=user) & models.Q(expiration_date__lte=now.date())) \
-      .order_by('expiration_date')
+      .order_by('-leitner_box', 'expiration_date')
   
   def prefetch_everything(self):
     return self.select_related('entry')
