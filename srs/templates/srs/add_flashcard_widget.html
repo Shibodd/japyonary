@@ -1,0 +1,11 @@
+{% load srs_filters %}
+
+{% if user.is_authenticated %}
+
+<div class="add-flashcard-widget" data-id="{{ entry.pk }}">
+  <button class="add-flashcard-btn btn p-0 w-100 h-100" {% if entry|is_in_user_srs:user %} disabled {% endif %}>
+    <i class="bi bi-wallet2"></i>
+  </button>
+</div>
+
+{% endif %}

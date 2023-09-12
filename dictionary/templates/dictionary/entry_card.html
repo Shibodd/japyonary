@@ -1,5 +1,4 @@
 {% load dictionary_filters %}
-{% load srs_filters %}
 
 <div class="dictionary-entry" data-id="{{ entry.pk }}">
   {% with main_keb=entry|entry_get_main_keb main_reb=entry|entry_get_main_reb %}
@@ -13,11 +12,7 @@
         {% endif %}
       </div>
       
-      <div class="add-flashcard-widget" data-id="{{ entry.pk }}">
-        <button class="add-flashcard-btn btn p-0 w-100 h-100" {% if entry|is_in_user_srs:user %} disabled {% endif %}>
-          <i class="bi bi-wallet2"></i>
-        </button>
-      </div>
+      {% include 'srs/add_flashcard_widget.html' %}
       {% block entry_buttons_area_content %} {% endblock %}
     </div>
   {% endwith %}
