@@ -89,7 +89,11 @@
           {% crispy add_comment_form %}
         </div>
       {% else %}
-      <p> This deck is private, adding comments is disabled. </p>
+        {% if deck.is_private %}
+          <p> This deck is private, adding comments is disabled. </p>
+        {% else %}
+          <p> You must be logged in to add comments. </p>
+        {% endif %}
       {% endif %}
     </div>
   </header>
