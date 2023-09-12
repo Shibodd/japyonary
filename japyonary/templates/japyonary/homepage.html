@@ -1,5 +1,6 @@
 {% extends 'japyonary/base.html' %}
 
+{% load srs_filters %}
 {% load crispy_forms_tags %}
 {% load static %}
 
@@ -26,17 +27,29 @@
     </div>
 
     {% if user.is_authenticated %}
-    {% else %}
-    <div>
-      <h2 class="display-6 "> Top 3 decks </h6>
-
-      {% csrf_token %}
-      {% include 'decks/deck_list.html' %}
-      
-      <div class="text-center">
-        <a class="link-dark display-6 text-center" href="{% url 'decks:deck_search' %}"> View more decks... </a>
+      <div class="fs-4 text-center">
+        Welcome back, {{ user.username }}!
+        <br/>
+        {% with pending_reviews=user|pending_reviews_count %}
+          {% if pending_reviews > 0 %}
+            You have {{ pending_reviews }} pending reviews -
+            <a href="{% url 'srs:srs_review' %}"> Review them now! </a>
+          {% else %}
+            You have no pending reviews! Great job!
+          {% endif %}
+        {% endwith %}
       </div>
-    </div>
+    {% else %}
+      <div>
+        <h2 class="display-6 "> Top 3 decks </h6>
+
+        {% csrf_token %}
+        {% include 'decks/deck_list.html' %}
+        
+        <div class="text-center">
+          <a class="link-dark display-6 text-center" href="{% url 'decks:deck_search' %}"> View more decks... </a>
+        </div>
+      </div>
     {% endif %}
   </main>
 {% endblock %}
