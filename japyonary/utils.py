@@ -1,3 +1,6 @@
+import more_itertools
+from django.contrib import messages
+
 def make_optional_dict(**kwargs):
   return dict((k, v) for k, v in kwargs.items() if v)
 
@@ -47,3 +50,13 @@ def make_ajax_response_bad(reason):
     'ok': False,
     'reason': reason
   })
+
+
+def add_statusbar_message(request, message, ok):
+  messages.add_message(request, messages.INFO if ok else messages.ERROR, message)
+
+def load_statusbar_context(ctx, request):
+  message = more_itertools.last(messages.get_messages(request), None)
+  if message is not None:
+    ctx['status_bar_message'] = message.message
+    ctx['status_bar_ok'] = "true" if message.level != messages.ERROR else "false"
