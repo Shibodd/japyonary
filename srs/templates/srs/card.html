@@ -1,4 +1,14 @@
 {% load dictionary_filters %}
 
+<div class="text-light text-center" lang="ja">
+  <div class="fs-4">
+    {{ entry|entry_get_main_reb }}
+  </div>
+  <div class="fs-1">
+    {{ entry|entry_get_main_keb }}
+  </div>
+</div>
 
-{{ entry|entry_get_main_reb }}
+<div id="srs-answer" class="d-none mt-3 container" style="color: white !important; max-height: 60vh; overflow-y: auto;">
+  {% include 'dictionary/entry_meanings.html' %}
+</div>
