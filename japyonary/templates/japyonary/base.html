@@ -33,6 +33,7 @@
         </ul>
         <ul class="navbar-nav">
           {% if user.is_authenticated %}
+            <li class="nav-item"> <a class="nav-link p-2" href="{% url 'srs:srs_review' %}"> My SRS </a> </li>
             <li class="nav-item"> <a class="nav-link p-2" href="{% url 'decks:deck_search' %}?mode=author&query={{ user.username }}">{{ user.username }}</a> </li>
             <li class="nav-item"> <a class="nav-link p-2" href="{% url 'users:logout' %}">Log out</a> </li>
           {% else %}

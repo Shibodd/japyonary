@@ -1,5 +1,7 @@
 var reviewCount = 0;
 var server_error = undefined;
+var server_disconnected = false;
+var reviews_done = false;
 
 function showElementById(id, show) {
   let elem = document.getElementById(id);
@@ -22,8 +24,8 @@ function on_connect() {
 
 function on_disconnect(ws, event) {
   console.log('Disconnected!', ws, event);
-  if (server_error === undefined) {
-    server_error = 'Server disconnected.';
+  if (server_error == undefined) {
+    server_disconnected = true;
   }
   exit_review();
 }
@@ -66,11 +68,22 @@ function exit_review() {
 
   let host = document.getElementById('srs-host');
   host.id = 'srs-results-container';
-  host.innerHTML = "Congratulations! You finished " + reviewCount + " reviews.";
 
-  if (server_error) {
-    host.innerHTML += '<p class="text-center mt-3"> The server encountered an error: <br/>' + server_error + '</p>';
+  let html = '';
+
+  if (reviews_done) {
+    html += '<p class="text-center mt-3"> Well done! You have no more pending reviews. </p>';
   }
+  else if (server_error) {
+    html += '<p class="text-center mt-3"> The server encountered an error: <br/>' + server_error + '</p>';
+  }
+  else if (server_disconnected) {
+    html += '<p class="text-center mt-3"> The server disconnected for an unknown reason. </p>';
+  }
+
+  html += '<p class="text-center mt-3"> The session has ended after ' + reviewCount + ' reviews. </p>';
+
+  host.innerHTML = html;  
 }
 
 function sendMessage(message, payload) {
@@ -97,6 +110,7 @@ const handlers = {
   },
   'reviews_done': function(payload) {
     console.log("Reviews done!", payload)
+    reviews_done = true;
   },
   'panic': function(payload) {
     const reason = payload['reason'];
