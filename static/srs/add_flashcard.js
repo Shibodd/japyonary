@@ -3,7 +3,7 @@ async function add_flashcard(entry_id, button) {
   const response = await ajax_call("/srs/ajax/add_flashcard", { entry_id: entry_id, should_add: true });
 
   if (response.new_added) {
-    console.log("Succesfully added flashcard");
+    console.log("Successfully added flashcard");
     button.disabled = true;
   } else {
     console.log("Flashcard addition failed");

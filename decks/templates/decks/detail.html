@@ -37,6 +37,7 @@
             <li class="nav-item mx-1 my-1 ms-auto">
               <a class="btn btn-primary" href="{% url 'decks:deck_vocabulary' deck.pk %}"> View vocabulary ({{ deck.dictionary_entries.count }}) </a>
             </li>
+            {% if user.is_authenticated %}
             <li class="nav-item mx-1 my-1 ms-auto">
               <form action="{% url 'decks:deck_clone' %}" method="post" id="cloneDeck">
                 {% csrf_token %}
@@ -44,6 +45,7 @@
                 <button class="btn btn-primary" type="submit"> Clone </button>
               </form>
             </li>
+            {% endif %}
   
             {% if request.user == deck.owner or request.user.is_superuser %}
             <li class="nav-item mx-1 my-1 ms-auto">

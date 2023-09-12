@@ -9,7 +9,7 @@ from decks import models
 from japyonary import utils
 
 # Create your views here.
-class DeckSearchView(ListView):
+class DeckSearchView(utils.StatusBarContextMixin, ListView):
   template_name = 'decks/search.html'
   model = models.Deck
   context_object_name = 'decks'
@@ -36,6 +36,7 @@ class DeckSearchView(ListView):
       ],
       data = utils.make_optional_dict(query=self.query, mode=self.mode)
     )
+
     return ctx
   
   def get_queryset(self) -> QuerySet[Any]:

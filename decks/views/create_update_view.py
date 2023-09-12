@@ -10,6 +10,7 @@ from crispy_forms.layout import Submit, HTML, Layout, Div
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from decks.views.mixins import DeckEditPermissionTestMixin
+from japyonary import utils
 
 class CreateUpdateDeckFormMixin():
   fields = [ 'name', 'description', 'is_private', 'cover_image' ]
@@ -33,10 +34,11 @@ class CreateUpdateDeckFormMixin():
     )
     return form
 
-class DeckCreateView(LoginRequiredMixin, CreateUpdateDeckFormMixin, CreateView):
+class DeckCreateView(utils.StatusBarFormValidationMixin, LoginRequiredMixin, CreateUpdateDeckFormMixin, CreateView):
   model = Deck
   template_name = "decks/deck_create.html"
   submit_text = 'Create'
+  status_bar_message_on_success = "Deck created successfully!"
 
   def form_valid(self, form: BaseModelForm) -> HttpResponse:
     form.instance.owner = self.request.user
@@ -45,10 +47,11 @@ class DeckCreateView(LoginRequiredMixin, CreateUpdateDeckFormMixin, CreateView):
   def get_cancel_url(self):
     return reverse('decks:deck_search')
 
-class DeckUpdateView(LoginRequiredMixin, DeckEditPermissionTestMixin, CreateUpdateDeckFormMixin, UpdateView):
+class DeckUpdateView(LoginRequiredMixin, DeckEditPermissionTestMixin, utils.StatusBarFormValidationMixin, CreateUpdateDeckFormMixin, UpdateView):
   model = Deck
   template_name = "decks/deck_update.html"
   submit_text = 'Update'
+  status_bar_message_on_success = "Deck updated successfully."
 
   def get_cancel_url(self):
     return self.get_success_url()

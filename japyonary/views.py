@@ -1,10 +1,11 @@
 from typing import Any, Dict
 from django.views.generic import TemplateView
+from japyonary import utils
 from japyonary.forms.search_bar import SearchBarForm
 from decks.models import Deck
 from django.urls import reverse
 
-class HomepageView(TemplateView):
+class HomepageView(utils.StatusBarContextMixin, TemplateView):
   template_name = "japyonary/homepage.html"
 
   def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:

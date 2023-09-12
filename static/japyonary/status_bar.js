@@ -1,6 +1,7 @@
 let status_bar_timeout_id = undefined;
 
 function trigger_status_bar(message, ok) {
+  console.log((ok? "SB INFO: " : "SB ERR: ") + message)
   let elem = document.getElementById("status-bar");
 
   elem.style.opacity = 1;

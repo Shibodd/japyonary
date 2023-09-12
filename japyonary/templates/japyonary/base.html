@@ -23,19 +23,27 @@
     <script type="text/javascript" src="{% static 'japyonary/status_bar.js' %}"></script>
 
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const activePage = document.querySelector('[name=navbar-highlighted-url]').value;
+      function japyonary_init() {
+        function navbar() {
+          const activePage = document.querySelector('[name=navbar-highlighted-url]').value;
+  
+          if (!activePage)
+            return;
 
-        if (!activePage)
-          return;
+          const link = document.querySelector(activePage);
+          link.classList.add('active');
+        }
 
-        const link = document.querySelector(activePage);
-        link.classList.add('active');
+        function status_bar() {
+          {% if status_bar_message %}
+            trigger_status_bar("{{ status_bar_message }}", {{ status_bar_ok }});
+          {% endif %}
+        }
 
-        {% if status_bar_message %}
-          trigger_status_bar("{{ status_bar_message }}", {{ status_bar_ok }});
-        {% endif %}
-      });
+        navbar();
+        status_bar();
+
+      }
     </script>
 
 
@@ -43,7 +51,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   </head>
   
-  <body>
+  <body onload="japyonary_init()">
     <input type="hidden" value="{% block 'navbar-highlighed-url' %}{% endblock %}" name="navbar-highlighted-url"/>
     <header class="container-fluid mb-3" style="background: #214a87;">
       <nav class="container navbar navbar-expand-lg navbar-dark">

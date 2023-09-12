@@ -2,6 +2,7 @@ from typing import Any, Dict
 from django.db.models.query import QuerySet
 from django.views.generic import ListView
 from django.http.request import HttpRequest
+from japyonary import utils
 
 from japyonary.forms.search_bar import SearchBarForm
 from . import models
@@ -11,7 +12,7 @@ import re
 from . import models
 from django.db.models import Count
 
-class DictionarySearchView(ListView):
+class DictionarySearchView(utils.StatusBarContextMixin, ListView):
   template_name = 'dictionary/index.html'
   model = models.Entry
   context_object_name = 'entries'

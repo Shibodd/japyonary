@@ -63,7 +63,7 @@ class SrsIntegrationTests(TestCase):
 
   async def test_complete(self):
     """
-    Succesfully complete an SRS session in which the user answers all cards.
+    Successfully complete an SRS session in which the user answers all cards.
     """
     EXPIRED_ENTRY_COUNT = 3
     await generate_flashcards(self.user, EXPIRED_ENTRY_COUNT, 2)

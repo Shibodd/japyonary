@@ -4,6 +4,8 @@ from decks.models import Deck
 from django.shortcuts import redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 
+from japyonary import utils
+
 class DeckCloneView(LoginRequiredMixin, View):
   def post(self, request):
     deck_id = request.POST.get('deck_id')
@@ -25,4 +27,5 @@ class DeckCloneView(LoginRequiredMixin, View):
     deck.save()
     deck.dictionary_entries.set(old_entries)
     
+    utils.add_statusbar_message(self.request, "Deck cloned successfully.")
     return redirect('decks:deck_detail', slug = deck.pk)

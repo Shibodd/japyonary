@@ -11,7 +11,7 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from decks.views.mixins import DeckViewPermissionTestMixin
 
-class DeckDetailView(DeckViewPermissionTestMixin, DetailView):
+class DeckDetailView(utils.StatusBarContextMixin, DeckViewPermissionTestMixin, DetailView):
   template_name = 'decks/detail.html'
   model = models.Deck
   context_object_name = 'deck'
@@ -35,6 +35,8 @@ class DeckDetailView(DeckViewPermissionTestMixin, DetailView):
       owner = request.user,
       text = form.cleaned_data['text']
     )
+
+    utils.add_statusbar_message(self.request, "Comment added successfully.")
 
     return redirect(reverse('decks:deck_detail', kwargs = {
       'slug': slug

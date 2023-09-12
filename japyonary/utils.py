@@ -52,11 +52,33 @@ def make_ajax_response_bad(reason):
   })
 
 
-def add_statusbar_message(request, message, ok):
-  messages.add_message(request, messages.INFO if ok else messages.ERROR, message)
+
+def add_statusbar_message(request, message, ok=True):
+  messages.add_message(request, messages.INFO if ok else messages.ERROR, message, fail_silently=False)
+
+class StatusBarFormValidationMixin():
+  status_bar_message_on_success = "Success"
+  status_bar_message_on_fail = "Operation failed"
+
+  def form_valid(self, form):
+    ans = super().form_valid(form)
+    add_statusbar_message(self.request, self.status_bar_message_on_success, True)
+    return ans
+  
+  def form_invalid(self, form):
+    add_statusbar_message(self.request, self.status_bar_message_on_fail, False)
+    ans = super().form_invalid(form)
+    return ans
+  
 
 def load_statusbar_context(ctx, request):
   message = more_itertools.last(messages.get_messages(request), None)
   if message is not None:
     ctx['status_bar_message'] = message.message
     ctx['status_bar_ok'] = "true" if message.level != messages.ERROR else "false"
+
+class StatusBarContextMixin():
+  def get_context_data(self, **kwargs):
+    ctx = super().get_context_data(**kwargs)
+    load_statusbar_context(ctx, self.request)
+    return ctx
