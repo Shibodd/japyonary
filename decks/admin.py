@@ -6,4 +6,5 @@ class DeckAdmin(admin.ModelAdmin):
   raw_id_fields = ("dictionary_entries", )
 
 # Register your models here.
+admin.site.register(models.Comment)
 admin.site.register(models.Deck, DeckAdmin)

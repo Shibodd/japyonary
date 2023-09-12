@@ -40,5 +40,9 @@ class Flashcard(models.Model):
       self.last_review_timestamp
     )
 
+  def __str__(self) -> str:
+    return f"{self.owner.username} - {self.entry.ent_seq}"
+
+
   class Meta:
     constraints = (models.UniqueConstraint('entry', 'owner', name='user_one_flashcard_per_entry'), )

@@ -33,7 +33,10 @@ class Deck(models.Model):
   creation_timestamp = models.DateTimeField(auto_now_add=True)
 
   def is_hearted_by(self, user: User):
-    return self.hearts.contains(user) 
+    return self.hearts.contains(user)
+  
+  def __str__(self) -> str:
+    return f"{self.name} by {self.owner.username}"
     
 
 class Comment(models.Model):
@@ -44,3 +47,6 @@ class Comment(models.Model):
   
   class Meta:
     get_latest_by = 'creation_timestamp'
+
+  def __str__(self) -> str:
+    return f"{self.owner.username} commented on {self.deck.name} at {self.creation_timestamp}"

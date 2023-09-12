@@ -24,7 +24,7 @@ urlpatterns = [
   path('admin/', admin.site.urls),
   path("dictionary/", include("dictionary.urls")),
   path("decks/", include("decks.urls")),
-  path("user/", include("users.urls")),
+  path("users/", include("users.urls")),
   path("srs/", include("srs.urls")),
   path('', HomepageView.as_view())
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) \
