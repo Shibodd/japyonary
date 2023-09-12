@@ -1,3 +1,6 @@
+var reviewCount = 0;
+var server_error = undefined;
+
 function showElementById(id, show) {
   let elem = document.getElementById(id);
   if (show)
@@ -17,12 +20,16 @@ function on_connect() {
   sendMessage("start_reviews");
 }
 
-function on_disconnect() {
-  console.log('Disconnected.');
+function on_disconnect(ws, event) {
+  console.log('Disconnected!', ws, event);
+  if (server_error === undefined) {
+    server_error = 'Server disconnected.';
+  }
+  exit_review();
 }
 
 function on_new_card(html, undo_available) {
-  console.log("New card!", html, undo_available);
+  console.log("New card!");
 
   __showAnswer(false);
   document.getElementById("srs-host").innerHTML = html;
@@ -32,11 +39,15 @@ function on_new_card(html, undo_available) {
 function answer(confidence) {
   console.log("Answering ", confidence);
   sendMessage('answer', { confidence: confidence });
+
+  reviewCount = reviewCount + 1;
 }
 
 function undo() {
   console.log("Undoing");
   sendMessage('undo');
+
+  reviewCount = reviewCount - 1;
 }
 
 function showAnswer() {
@@ -44,11 +55,34 @@ function showAnswer() {
   __showAnswer(true);
 }
 
+function exit_review() {
+  console.log("Exiting review...")
+  disconnect();
+  
+  document.querySelector('footer').remove()
+  document.getElementById('srs-undo-button', false).remove();
+  document.getElementById('srs-exit-button', false).remove();
+  document.getElementById('japyonary-button').hidden = false;
+
+  let host = document.getElementById('srs-host');
+  host.id = 'srs-results-container';
+  host.innerHTML = "Congratulations! You finished " + reviewCount + " reviews.";
+
+  if (server_error) {
+    host.innerHTML += '<p class="text-center mt-3"> The server encountered an error: <br/>' + server_error + '</p>';
+  }
+}
+
 function sendMessage(message, payload) {
   ws.send(JSON.stringify({
     'message': message,
     'payload': payload
   }));
+}
+
+function disconnect() {
+  ws.onclose = undefined;
+  ws.close();
 }
 
 const handlers = {
@@ -63,6 +97,13 @@ const handlers = {
   },
   'reviews_done': function(payload) {
     console.log("Reviews done!", payload)
+  },
+  'panic': function(payload) {
+    const reason = payload['reason'];
+    if (reason !== undefined)
+      server_error = reason;
+    else
+      server_error = "Unknown";
   }
 }
 
@@ -85,3 +126,7 @@ ws.onmessage = function(e) {
 
 ws.onopen = on_connect;
 ws.onclose = on_disconnect;
+
+window.onbeforeunload = function() {
+  disconnect();
+};

@@ -32,6 +32,10 @@
       display: flex !important;
       border: none !important;
     }
+    
+    #srs-results-container {
+      color: white !important;
+    }
   </style>
   <script type="text/javascript" src="{% static 'srs/srs.js' %}"></script>
 {% endblock %}
@@ -40,18 +44,24 @@
   <div class="d-flex flex-column" style="width: 100%; height: 100%">
     <header>
       <nav class="container navbar navbar-expand-lg navbar-dark">
-        <a class="navbar-brand" href="/"> Japyonary </a>
-
-        <ul class="flex-grow-1"></ul>
+        <a hidden id='japyonary-button' class="navbar-brand" href="/"> Japyonary </a>
 
         <button id='srs-undo-button' onclick="undo()" class="btn text-light border border-warning">
           Undo
         </button>
+        
+        <ul class="flex-grow-1"></ul>
+
+        <button id='srs-exit-button' onclick="exit_review()" class="btn text-light border border-danger">
+          Exit review
+        </button>
       </nav>
     </header>
+    
     <main id='srs-host' class="flex-grow-1 center-container my-2">
       <div id="srs-answer"></div>
     </main>
+
     <footer class="center-container my-4">
       <div id="srs-shown-answer-buttons" class="d-none">
         <button class="btn btn-lg btn-success" onclick="answer(1);"> Yes </button>
@@ -62,4 +72,5 @@
       </div>
     </footer>
   </div>
+
 {% endblock %}
