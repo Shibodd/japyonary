@@ -7,6 +7,7 @@ app_name = 'decks'
 urlpatterns = [
   path("", views.DeckSearchView.as_view(), name="deck_search"),
   path("view/<slug:slug>", views.DeckDetailView.as_view(), name="deck_detail"),
+  path("deck_to_srs", views.DeckToSrsView.as_view(), name="deck_to_srs"),
   path("create", views.DeckCreateView.as_view(), name="deck_create"),
   path("delete/<slug:slug>", views.DeckDeleteView.as_view(), name="deck_delete"),
   path("update/<slug:slug>", views.DeckUpdateView.as_view(), name="deck_update"),

@@ -46,6 +46,10 @@
             <a class="btn btn-primary" href="{% url 'decks:deck_vocabulary' deck.pk %}">Exit edit mode</a>
           {% else %}
             <a class="btn btn-primary" href="{% url 'decks:deck_vocabulary_edit' deck.pk %}">Enter edit mode</a>
+            <form action="{% url 'decks:deck_to_srs' %}" method="post"> {% csrf_token %}
+              <input type="hidden" value="{{ deck.pk }}" name="deck_id" />
+              <button type="submit" class="btn btn-primary mt-3"> Add all entries to SRS </a>
+            </form>
           {% endif %}
         </div>
         
