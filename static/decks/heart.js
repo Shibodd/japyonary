@@ -11,6 +11,11 @@ async function heart(deck_id, icon, count) {
   });
 
   count.innerHTML = response.new_heart_count;
+
+  if (response.new_hearted != was_hearted) {
+    trigger_status_bar(was_hearted? "Unhearted!" : "Hearted!", true);
+  }
+
   if (response.new_hearted) {
     icon.classList.add(HEARTED_CLASS);
     icon.classList.remove(UNHEARTED_CLASS);

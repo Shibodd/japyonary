@@ -4,6 +4,8 @@ async function add_flashcard(entry_id, button) {
 
   if (response.new_added) {
     console.log("Successfully added flashcard");
+
+    trigger_status_bar("Flashcard added!", true);
     button.disabled = true;
   } else {
     console.log("Flashcard addition failed");
