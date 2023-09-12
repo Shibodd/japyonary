@@ -8,18 +8,18 @@ register = template.Library()
 @register.filter
 def entry_get_main_reb(entry: models.Entry):
   if entry.rele_set.count() > 1:
-    return entry.rele_set.annotate(count=Count('re_pri')).order_by('count').values('reb')[0]['reb']
+    return entry.rele_set.annotate(count=Count('re_pri')).order_by('-count').values('reb').first()['reb']
   else:
-    return entry.rele_set.all()[0].reb
+    return entry.rele_set.first().reb
 
 @register.filter
 def entry_get_main_keb(entry: models.Entry):
   kele_count = entry.kele_set.count()
   if kele_count > 0:
     if kele_count > 1:
-      return entry.kele_set.annotate(count=Count('ke_pri')).order_by('count').values('keb')[0]['keb']
+      return entry.kele_set.annotate(count=Count('ke_pri')).order_by('-count').values('keb').first()['keb']
     else:
-      return entry.kele_set.all()[0].keb
+      return entry.kele_set.first().keb
   else:
     return None
   

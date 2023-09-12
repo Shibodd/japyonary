@@ -69,13 +69,17 @@ class SrsReview():
       return wrapper
     return decorator
   
+  @database_sync_to_async
+  def __render_card_to_string(self):
+    return render_to_string('srs/card.html', {
+      'entry': self.current_card.entry,
+      'user': self.user
+    })
+  
   async def __send_current_card(self):
     if self.current_card:
       self.logger.debug('Sending card %d to user "%s"', self.current_card.pk, self.user.username)
-      html = render_to_string('srs/card.html', {
-        'entry': self.current_card.entry,
-        'user': self.user
-      })
+      html = await self.__render_card_to_string()
       await self.bridge.srs_new_card(html, len(self.undo_history) > 0)
       return True
     else:

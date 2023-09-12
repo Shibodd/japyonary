@@ -12,7 +12,7 @@ class FlashcardQuerySet(models.QuerySet):
       .order_by('expiration_date')
   
   def prefetch_everything(self):
-    return self.prefetch_related(models.Prefetch('entry', queryset=Entry.objects.prefetch_everything()))
+    return self.select_related('entry')
 
 @dataclass
 class FlashcardSnapshot:

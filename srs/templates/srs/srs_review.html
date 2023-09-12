@@ -1,56 +1,50 @@
-{% extends 'japyonary/base.html' %}
+{% extends 'japyonary/base_minimal.html' %}
+{% load static %}
+
 
 {% block head %}
-  <script>
-    function on_new_card(html, undo_available) {
-      console.log("New card! ", html, undo_available);
+  <style>
+    body {
+      width: 100vw;
+      height: 100vh;
+      background: #181818 !important;
     }
 
-    const ws = new WebSocket(
-      'ws://' + window.location.host + '/ws/'
-    );
-
-    const handlers = {
-      'new_card': function(payload) {
-        const html = payload['html'];
-        const undo_available = payload['undo_available'];
-        if (html !== undefined && undo_available !== undefined) {
-          on_new_card(html, undo_available);
-        } else {
-          console.log("Malformed new card!");
-        }
-
-      },
-      'reviews_done': function(payload) {
-        console.log("Reviews done!", payload)
-      }
+    .center-container {
+      background: transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
-    ws.onmessage = function(e) {
-      const data = JSON.parse(e.data);
-      const message = data.message;
-      const payload = data.payload;
-
-      const handler = handlers[message];
-      if (handler)
-        handler(payload);
-      else
-        console.log("Unhandled message:", message, payload);
-    };
-
-    ws.onopen = function(e) {
-      ws.send(JSON.stringify({
-        'message': 'start_reviews'
-      }));
+    #srs_host {
+      
     }
-
-    ws.onclose = function(e) {
-      // window.location.replace('http://sidanmor.com');
-      console.error('Disconnected.');
-    };
-  </script>
+    nav {
+      background: transparent;
+    }
+  </style>
+  <script type="text/javascript" src="{% static 'srs/srs.js' %}"></script>
 {% endblock %}
 
 {% block body %}
-
+  <div class="d-flex flex-column" style="width: 100%; height: 100%">
+    <header>
+      <nav class="container navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="/"> Japyonary </a>
+      </nav>
+    </header>
+    <main id='srs_host' class="flex-grow-1 center-container my-2">
+      
+    </main>
+    <footer class="center-container my-4">
+      <div id="srs-show-answer-buttons">
+        <button class="btn btn-lg btn-success"> Yes </button>
+        <button class="btn btn-lg btn-danger"> No </button>
+      </div>
+      <div id="srs-hidden-answer-buttons">
+        <button class="btn btn-lg text-light border border-primary"> Answer </button>
+      </div>
+    </footer>
+  </div>
 {% endblock %}
