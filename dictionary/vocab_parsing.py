@@ -32,10 +32,12 @@ def get_entries_from_file(file: UploadedFile):
   tokens = itertools.islice(tokens, 50000)
 
   # Read and close
-  words = set(tok.dictionary_form() for tok in tokens)
-  file.close()
+  try:
+    words = set(tok.dictionary_form() for tok in tokens)
+  finally:
+    file.close()
 
   # Now we have to match the word set with our dictionary entries.
   # TODO: CPU goes BRRR, maybe cache this
   lookup = dict((dbobj['keb'], dbobj['entry_id']) for dbobj in KEle.objects.values('entry_id', 'keb'))
-  return filter(None, (lookup.get(word) for word in words))
+  return list(filter(None, (lookup.get(word) for word in words)))

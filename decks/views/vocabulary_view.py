@@ -5,6 +5,7 @@ from dictionary.models import Entry
 from decks.models import Deck
 from django import http
 from django.shortcuts import redirect
+from japyonary import utils
 
 from dictionary.views import DictionarySearchView
 from django.core.exceptions import BadRequest
@@ -26,12 +27,21 @@ class DeckVocabularyView(DictionarySearchView):
     if not file:
       raise BadRequest("No file provided for uplod.")
     
-    entry_ids = vocab_parsing.get_entries_from_file(file)
+    error = None
 
-    Deck.dictionary_entries.through.objects.bulk_create(
-      (Deck.dictionary_entries.through(deck_id = slug, entry_id=entry_id) for entry_id in entry_ids),
-      ignore_conflicts = True
-    )
+    try:
+      entry_ids = vocab_parsing.get_entries_from_file(file)
+    except Exception as e:
+      error = e
+
+    if error is None:
+      Deck.dictionary_entries.through.objects.bulk_create(
+        (Deck.dictionary_entries.through(deck_id = slug, entry_id=entry_id) for entry_id in entry_ids),
+        ignore_conflicts = True
+      )
+      utils.add_statusbar_message(self.request, f'Succesfully imported {len(entry_ids)} entries!')
+    else:
+      utils.add_statusbar_message(self.request, 'The import failed: ' + str(error), False)
 
     return redirect('decks:deck_vocabulary', slug=self.deck.pk)
 
