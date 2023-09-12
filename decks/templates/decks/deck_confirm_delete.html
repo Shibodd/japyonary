@@ -11,7 +11,7 @@
 
     <div class="d-flex">
       <input class="btn btn-danger" type="submit" value="Confirm">
-      <button class="btn btn-primary flex-grow-1 mx-3"> Cancel </button>
+      <a href="{% url 'decks:deck_detail' object.pk  %}" class="btn btn-primary flex-grow-1 mx-3"> Cancel </a>
     </div>
   </form>
 </main>
