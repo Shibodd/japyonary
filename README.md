@@ -6,5 +6,7 @@ mkdir japyonary
 cd japyonary
 git clone REPO_URL
 python3 -m venv env
+source env/bin/activate
 cd japyonary
-source setup.sh
+chmod +x setup.sh
+./setup.sh
