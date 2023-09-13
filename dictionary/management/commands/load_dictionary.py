@@ -24,11 +24,11 @@ def load_jmd_xml(path: Path) -> jmdict_xml.Jmdict:
       return pickle.Unpickler(f).load()
       
   else:
-    LOGGER.info("Parsing xml dictionary...")
+    LOGGER.info("Parsing xml dictionary... (this will take about one minute)")
     parser = XmlParser()
     jd = parser.from_path(path, jmdict_xml.Jmdict)
 
-    LOGGER.info("Writing pickled dictionary...")
+    LOGGER.info("Caching the parsed dictionary with pickle...")
     with pickled_path.open('wb') as f:
       pickle.Pickler(f).dump(jd)
     return jd
@@ -85,9 +85,9 @@ def assign_uids(objects):
     obj.__uid = i
 
 def update_db(jmd: jmdict_xml.Jmdict):
-  
+  LOGGER.info("I will now fill the DB. This will take about one minute.")
+
   LOGGER.info("Resolving links...")
-  
   resolve_inter_entry_links(jmd)
 
   # Generate UIDS for models that have foreign key relationships.
@@ -260,6 +260,8 @@ class Command(BaseCommand):
     parser.add_argument('jmdict_path')
 
   def handle(self, *args, **options):
+    logging.basicConfig(level=logging.INFO)
+
     jmd = load_jmd_xml(options['jmdict_path'])
     LOGGER.info("Dictionary loaded!")
     update_db(jmd)
