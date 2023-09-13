@@ -1,8 +1,12 @@
 set -e
 
+VENV_NAME=env
 ROOT=$(dirname "$0")
 JMDICT_VERSION=JMdict_e
 JMDICT_DOWNLOAD_FOLDER=$ROOT/JMdict
+
+python3 -m venv $VENV_NAME
+source $VENV_NAME/bin/activate
 
 # Install all dependencies
 python3 -m pip install -r requirements.txt
