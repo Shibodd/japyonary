@@ -30,3 +30,10 @@ def generate_flashcards(user, expired_entry_count, additional_entry_count=0):
   ) for i, entry in enumerate(Entry.objects.all()))
 
   Flashcard.objects.bulk_create(flashcards)
+
+@database_sync_to_async
+def generate_single_expired_flashcard(user, box):
+  generate_flashcards.func(user, 1, 0)
+  flashcard = Flashcard.objects.get()
+  flashcard.leitner_box = box
+  flashcard.save()

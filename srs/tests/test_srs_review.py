@@ -6,11 +6,19 @@ import logging
 from users.models import User
 from unittest.mock import patch, call, AsyncMock
 
-from srs.tests.generate_flashcards import generate_flashcards
+from srs.tests.generate_flashcards import generate_flashcards, generate_single_expired_flashcard
 
 class SrsReviewTests(TestCase):
   def setUp(self) -> None:
     self.user = User.objects.get_or_create(username='testuser')[0]
+
+  async def test_not_in_progress(self):
+    mock_bridge = AsyncMock(spec=SrsBridge)
+    review = SrsReview(mock_bridge)
+
+    with self.assertRaises(SrsException):
+      await review.undo()
+
 
   async def test_with_no_pending_reviews(self):
     mock_bridge = AsyncMock(spec=SrsBridge)
@@ -104,33 +112,45 @@ class SrsReviewTests(TestCase):
     new = (await Flashcard.objects.aget()).get_snapshot()
     return old, new
   
+  async def __snapshot_flashcards(self):
+    return { x.pk: x.get_snapshot() async for x in Flashcard.objects.all() }
+  
+  async def __test_single_flashcard_answer_and_get_old_new(self, box, answer) -> Tuple[Flashcard, Flashcard]:
+    await generate_single_expired_flashcard(self.user, box)
+    self.assertEqual(await Flashcard.objects.acount(), 1)
+
+    review = SrsReview(AsyncMock(spec=SrsBridge))
+    await review.start(self.user)
+    old = list((await self.__snapshot_flashcards()).values())[0]
+    await review.answer(answer)
+    new = list((await self.__snapshot_flashcards()).values())[0]
+
+    return old, new
+
   async def test_positive_answer_updates(self):
     """ A positive answer should correctly update a flashcard. """
-
-    await generate_flashcards(self.user, 1)
-    mock_bridge = AsyncMock(spec=SrsBridge)
-    review = SrsReview(mock_bridge)
-
-    old, new = await self.__single_flashcard_get_old_new(review, mock_bridge, answer = 1)
+    old, new = await self.__test_single_flashcard_answer_and_get_old_new(0, 1)
     self.assertGreater(new.expiration_date, old.expiration_date)
     self.assertGreater(new.last_review_timestamp, old.last_review_timestamp)
     self.assertGreater(new.leitner_box, old.leitner_box)
 
   async def test_bad_answer_updates(self):
-    """ Answer should correctly update a flashcard. """
-
-    await generate_flashcards(self.user, 1)
-    flashcard = await Flashcard.objects.aget()
-    flashcard.leitner_box = 5
-    await flashcard.asave()
-
-    mock_bridge = AsyncMock(spec=SrsBridge)
-    review = SrsReview(mock_bridge)
-
-    old, new = await self.__single_flashcard_get_old_new(review, mock_bridge, answer = 0)
+    """ A bad answer should correctly update a flashcard. """
+    old, new = await self.__test_single_flashcard_answer_and_get_old_new(5, 0)
     self.assertGreater(new.expiration_date, old.expiration_date)
     self.assertGreater(new.last_review_timestamp, old.last_review_timestamp)
     self.assertLess(new.leitner_box, old.leitner_box)
+
+  async def test_bad_answer_with_leitner_0_updates(self):
+    """
+    A bad answer on a flashcard with leitner box 0 
+    should result in the flashcard remaining in box 0,
+    yet increasing last_review_timestamp and expiration_date.
+    """
+    old, new = await self.__test_single_flashcard_answer_and_get_old_new(0, 0)
+    self.assertGreater(new.expiration_date, old.expiration_date)
+    self.assertGreater(new.last_review_timestamp, old.last_review_timestamp)
+    self.assertEqual(new.leitner_box, old.leitner_box)
 
 
   async def test_undo_restores_flashcard(self):
@@ -140,10 +160,8 @@ class SrsReviewTests(TestCase):
     mock_bridge = AsyncMock(spec=SrsBridge)
     review = SrsReview(mock_bridge)
 
-    async def snapshot_flashcards():
-      return { x.pk: x.get_snapshot() async for x in Flashcard.objects.all() }
-
-    old = await snapshot_flashcards()
+    
+    old = await self.__snapshot_flashcards()
 
     await review.start(self.user)
     mock_bridge.srs_new_card.assert_awaited_once()
@@ -153,13 +171,13 @@ class SrsReviewTests(TestCase):
     mock_bridge.srs_new_card.assert_awaited_once()
     mock_bridge.srs_new_card.reset_mock()
 
-    after_answer = await snapshot_flashcards()
+    after_answer = await self.__snapshot_flashcards()
     self.assertNotEqual(old, after_answer, "Answer did not modify the flashcard.")
 
     await review.undo()
     mock_bridge.srs_new_card.assert_awaited_once()
     mock_bridge.srs_new_card.reset_mock()
 
-    after_undo = await snapshot_flashcards()
+    after_undo = await self.__snapshot_flashcards()
     self.assertNotEqual(after_answer, after_undo, "The undo did not modify the flashcard.")
     self.assertEqual(old, after_undo, "Undo modified the flashcard to the wrong state.")

@@ -58,16 +58,14 @@ class SrsReview():
     self.bridge = bridge
 
   # Helpers
-  def __require_in_progress():
-    def decorator(fn):
-      @functools.wraps(fn)
-      async def wrapper(self):
-        if self.review_in_progress:
-          await fn()
-        else:
-          raise SrsException('The review has not yet been started.')
-      return wrapper
-    return decorator
+  def __require_in_progress(fn):
+    @functools.wraps(fn)
+    async def wrapper(self, *args, **kwargs):
+      if self.review_in_progress:
+        await fn(self, *args, **kwargs)
+      else:
+        raise SrsException('The review has not yet been started.')
+    return wrapper
   
   @database_sync_to_async
   def __render_card_to_string(self):
@@ -108,11 +106,11 @@ class SrsReview():
     self.undo_history = []
     await self.__next_card()
 
-  __require_in_progress()
+  @__require_in_progress
   async def stop(self):
     self.logger.debug('User "%s" has prematurely abandoned the review.', self.user.username)
 
-  __require_in_progress()
+  @__require_in_progress
   async def answer(self, confidence):
     self.logger.debug('User "%s" answered card "%d" with confidence %d', self.user.username, self.current_card.entry.ent_seq, confidence)
     
@@ -135,7 +133,7 @@ class SrsReview():
     
     await self.__next_card()
 
-  __require_in_progress()
+  @__require_in_progress
   async def undo(self):
     if len(self.undo_history) == 0:
       self.logger.debug('User "%s" has requested an undo operation when there are no undoable cards.', self.user.username)
