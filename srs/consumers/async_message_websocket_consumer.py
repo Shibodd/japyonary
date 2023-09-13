@@ -20,7 +20,7 @@ class AsyncMessageWebsocketConsumer(AsyncJsonWebsocketConsumer):
     message = content.get('message')
     payload = content.get('payload', {})
 
-    if message is None:
+    if not isinstance(message, str):
       await self.panic('Protocol error')
     
     await self.receive_message(message, **payload)

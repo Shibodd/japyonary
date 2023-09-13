@@ -34,6 +34,20 @@ class MessageWebsocketConsumerTests(TestCase):
       'payload': { 'foo': 'bar' }
     })
     mock_panic.assert_awaited_once()
+
+  @patch.object(AsyncMessageWebsocketConsumer, 'panic')
+  async def test_message_is_not_string(self, mock_panic):
+    """
+    Reception of JSON content with the message field not being a string
+    should result in panic being called.
+    """
+
+    consumer = AsyncMessageWebsocketConsumer()
+    await consumer.receive_json({
+      'message': { 'hello': 'world' },
+      'payload': { 'foo': 'bar' }
+    })
+    mock_panic.assert_awaited_once()
     
 
   @patch.object(AsyncMessageWebsocketConsumer, 'panic')
