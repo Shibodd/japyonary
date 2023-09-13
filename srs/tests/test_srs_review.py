@@ -13,6 +13,9 @@ class SrsReviewTests(TestCase):
     self.user = User.objects.get_or_create(username='testuser')[0]
 
   async def test_not_in_progress(self):
+    """
+    SrsReview should raise SrsException if it is interacted with when not in progress.
+    """
     mock_bridge = AsyncMock(spec=SrsBridge)
     review = SrsReview(mock_bridge)
 
@@ -21,6 +24,9 @@ class SrsReviewTests(TestCase):
 
 
   async def test_with_no_pending_reviews(self):
+    """
+    SrsReview should immediately respond with reviews_done when starting a review with no pending reviews.
+    """
     mock_bridge = AsyncMock(spec=SrsBridge)
     review = SrsReview(mock_bridge)
 
@@ -29,6 +35,10 @@ class SrsReviewTests(TestCase):
     mock_bridge.srs_reviews_done.assert_awaited_once()
 
   async def test_answer_all_pending_reviews(self):
+    """
+    SrsReview should be able to handle an user clicking answer until the expired flashcards are finished.
+    Then, it should respond with reviews_done.
+    """
     PENDING_REVIEWS = 3
     await generate_flashcards(self.user, PENDING_REVIEWS, 2)
 
@@ -98,19 +108,6 @@ class SrsReviewTests(TestCase):
       await review.answer(1)
 
     mock_bridge.srs_reviews_done.assert_awaited_once()
-
-  async def __single_flashcard_get_old_new(self, review, mock_bridge, answer) -> Tuple[FlashcardSnapshot, FlashcardSnapshot]:
-    old = (await Flashcard.objects.aget()).get_snapshot()
-
-    await review.start(self.user)
-    mock_bridge.srs_new_card.assert_awaited_once()
-    mock_bridge.srs_reviews_done.assert_not_called()
-    
-    await review.answer(answer)
-    mock_bridge.srs_reviews_done.assert_awaited_once()
-
-    new = (await Flashcard.objects.aget()).get_snapshot()
-    return old, new
   
   async def __snapshot_flashcards(self):
     return { x.pk: x.get_snapshot() async for x in Flashcard.objects.all() }
