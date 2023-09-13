@@ -1,14 +1,14 @@
 set -e
 
-VENV_NAME=env
 ROOT=$(dirname "$0")
+VENV=$ROOT/env
 JMDICT_VERSION=JMdict_e
 JMDICT_DOWNLOAD_FOLDER=$ROOT/JMdict
 
 # Create the virtual environment
 echo "Creating virtual environment..."
-python3 -m venv $VENV_NAME
-source $VENV_NAME/bin/activate
+python3 -m venv $VENV
+source $VENV/bin/activate
 
 # Install all dependencies
 echo "Installing dependencies..."
