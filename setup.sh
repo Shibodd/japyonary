@@ -12,7 +12,7 @@ source $VENV/bin/activate
 
 # Install all dependencies
 echo "Installing dependencies..."
-python3 -m pip install -r requirements.txt
+python3 -m pip install -r $ROOT/requirements.txt
 
 # Download and unzip the JMdict
 echo "Downloading the dictionary..."
